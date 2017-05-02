@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/linearLayoutID"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:orientation="vertical"
+    android:weightSum="1">
+
+    <RadioGroup
+        android:id="@+id/group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checkedButton="@+id/radio2"
+        android:orientation="horizontal"
+        ></RadioGroup>
+
+    <TextView
+        android:id="@+id/txvResult"
+        android:layout_width="fill_parent"
+        android:layout_height="257dp"
+        android:text="Results"
+        android:layout_weight="0.85" />
+
+    <Button
+        android:id="@+id/btnStopScan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Stop scan" />
+
+    <Button
+        android:id="@+id/btnStartScan"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Start scan" />
+
+
+
+</LinearLayout>
