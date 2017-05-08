@@ -23,7 +23,7 @@ import android.os.Handler;
 import android.content.Context;
 
 public class MainActivity extends AppCompatActivity {
-
+//caca
     private BluetoothAdapter mBluetoothAdapter  = null;
     private BluetoothLeScanner mBluetoothLeScanner = null;
 
