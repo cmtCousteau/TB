@@ -10,6 +10,9 @@ import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCallback;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothGattService;
+
 
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
@@ -21,6 +24,10 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.os.Handler;
 import android.content.Context;
+
+import java.util.List;
+import java.util.ArrayList;
+
 
 public class MainActivity extends AppCompatActivity {
 //caca
@@ -108,14 +115,46 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                //resultTextView.setText("Service discovery");
+                Log.i(TAG, "Service : " + gatt.getServices().toString());
+
+                List<BluetoothGattService> services = gatt.getServices();
+                List<BluetoothGattCharacteristic> gattCharacteristics;
+                ArrayList<BluetoothGattCharacteristic> charas;
+
+                for (BluetoothGattService gattService : services) {
+                    Log.i(TAG, "---------------------------------------------------------- : ");
+                    Log.i(TAG, "Service : " + gattService);
+                    gattCharacteristics = gattService.getCharacteristics();
+                    charas = new ArrayList<>();
+                    for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
+
+                        charas.add(gattCharacteristic);
+                        Log.i(TAG, "Chara uuid    : " + gattCharacteristic.getUuid());
+                        Log.i(TAG, "read attempt  : " + gatt.readCharacteristic(gattCharacteristic));
+                   //     Log.i(TAG, "Write attempt : " + gatt.writeCharacteristic(gattCharacteristic));
+                        Log.i(TAG, "permission    : " + gattCharacteristic.getPermissions());
+
+                        // recpère le nom
+                        /*if(gattCharacteristic.getUuid().toString().equalsIgnoreCase("00002a00-0000-1000-8000-00805f9b34fb")) {
+                            Log.i(TAG, "lecture : " + gatt.readCharacteristic(gattCharacteristic));
+                        }
+                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase("3347aad2-fb94-11e2-a8e4-f23c91aec05e")) {
+                            Log.i(TAG, "test");
+                            Log.i(TAG, "ca" + gatt.readCharacteristic(gattCharacteristic));
+                        }
+                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase("3347AAB2-FB94-11E2-A8E4-F23C91AEC05E")) {
+                            Log.i(TAG, "Write attempt : " + gatt.writeCharacteristic(gattCharacteristic));
+                        }*/
+                    }
+                }
             }
         }
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt,BluetoothGattCharacteristic characteristic, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-
+                Log.i(TAG, "Read chara : ----------------------------");
+                Log.i(TAG, characteristic.getStringValue(0));
             }
         }
 
@@ -125,7 +164,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            Log.i(TAG, "cacacacacaca : ");
             super.onCharacteristicWrite(gatt, characteristic, status);
+            boolean stat = characteristic.setValue("0");
+            Log.i(TAG, "Write result : " + stat);
         }
     };
 
@@ -143,10 +185,12 @@ public class MainActivity extends AppCompatActivity {
 
 
                     if(result.getDevice().getName() != null && result.getDevice().getName().contains("Sa")) {
-                        resultTextView.setText("Name : " + result.getDevice().getName() + " MAC adress : " + result.getDevice().getAddress());
+                        resultTextView.setText("Name\t\t\t: " + result.getDevice().getName() + "\n MAC adress\t: " + result.getDevice().getAddress());
 
-                        result.getDevice().createBond();
-                        mBluetoothGatt = result.getDevice().connectGatt(MainActivity.this, false, mGattCallback);
+                       // result.getDevice().createBond();
+                        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(result.getDevice().getAddress());
+                        mBluetoothGatt=device.connectGatt(MainActivity.this, false, mGattCallback);
+                        //mBluetoothGatt = result.getDevice().connectGatt(MainActivity.this, false, mGattCallback);
                         mBluetoothLeScanner.stopScan(mLeScanCallback);
                     }
                 }
