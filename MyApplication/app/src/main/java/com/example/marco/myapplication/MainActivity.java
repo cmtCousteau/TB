@@ -241,16 +241,19 @@ public class MainActivity extends AppCompatActivity {
                     Log.i(TAG, "Chara value   : " + new String(ch.getValue()));
                 }
 
-                byte uncompressed[] = ("sdadsa").getBytes();
-                ch.setValue(uncompressed);
-                mBluetoothGatt.writeCharacteristic(ch);
-
                /* for (BluetoothGattDescriptor descriptor:gattCharacteristic.getDescriptors()){
                     //mBluetoothGatt.readDescriptor(descriptor);
                     Log.e(TAG, "BluetoothGattDescriptor : " + descriptor.getUuid().toString() + " Value : " + descriptor.getValue());
                 }*/
 
                 //
+            }
+
+            if(gattCharacteristic.getUuid().toString().equals("3347AB02-FB94-11E2-A8E4-F23C91AEC05E")){
+                ch =  gattCharacteristic;
+                byte uncompressed[] = ("sdadsa").getBytes();
+                ch.setValue(uncompressed);
+                mBluetoothGatt.writeCharacteristic(ch);
             }
         }
     }
