@@ -28,6 +28,7 @@ import android.content.Context;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.UUID;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -44,6 +45,24 @@ public class MainActivity extends AppCompatActivity {
     private Button btnStopScan = null;
     private Button btnRead = null;
     private Button btnDisconnect = null;
+    private Button btnWrite = null;
+
+
+    private final String txDataUUID   = "3347AB01-FB94-11E2-A8E4-F23C91AEC05E"; // peripheral  => central
+    private final String rxDataUUID   = "3347AB02-FB94-11E2-A8E4-F23C91AEC05E"; // central => peripheral
+    private final String txReadUUID   = "3347AB03-FB94-11E2-A8E4-F23C91AEC05E"; // read by central
+    private final String rxReadUUID   = "3347AB04-FB94-11E2-A8E4-F23C91AEC05E"; // peripheral  read
+    private final String txBinaryUUID = "3347AB05-FB94-11E2-A8E4-F23C91AEC05E"; // Type of data (0 binay, 1 ascii)
+    private final String rxBinaryUUID = "3347AB06-FB94-11E2-A8E4-F23C91AEC05E"; // Type of data (0 binay, 1 ascii)
+
+    private BluetoothGattCharacteristic txData;
+    private BluetoothGattCharacteristic rxData;
+    private BluetoothGattCharacteristic txRead;
+    private BluetoothGattCharacteristic rxRead;
+    private BluetoothGattCharacteristic txBinary;
+    private BluetoothGattCharacteristic rxBinary;
+
+    private boolean WRITE_OK = false;
 
     private int mStatus;
 
@@ -75,6 +94,16 @@ public class MainActivity extends AppCompatActivity {
         // Bouton de déconnection
         btnDisconnect = (Button)findViewById(R.id.btnDisconnect);
         btnDisconnect.setOnClickListener(btnDisconnectListener);
+        // Bouton pour écrire
+        btnWrite = (Button)findViewById(R.id.btnWrite);
+        btnWrite.setOnClickListener(btnWriteListener);
+
+
+
+
+        btnRead.setEnabled(false);
+        btnDisconnect.setEnabled(false);
+        btnStopScan.setEnabled(false);
 
 
 
@@ -126,9 +155,13 @@ public class MainActivity extends AppCompatActivity {
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 
             if (newState == BluetoothProfile.STATE_CONNECTED) {
+
                 Log.i(TAG, "Connected to GATT server.");
                 mStatus = newState;
                 mBluetoothGatt.discoverServices();
+
+
+
                 //gatt.discoverServices();
 
             } else if (newState == BluetoothProfile.STATE_DISCONNECTED) {
@@ -138,65 +171,65 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
+        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicWrite(gatt, characteristic, status);
+            WRITE_OK = true;
+            //Log.i(TAG, "Write callback : " + status);
+        }
+
+        @Override
+        public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+            super.onCharacteristicRead(gatt, characteristic, status);
+           // Log.i(TAG, "Read status : " + status);
+        }
+
+        @Override
+        public void onCharacteristicChanged (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic){
+          //  Log.i(TAG, "Read status : " + characteristic.getValue());
+        }
+
+        @Override
         public void onServicesDiscovered(BluetoothGatt gatt, int status) {
             if (status == BluetoothGatt.GATT_SUCCESS) {
-                Log.i(TAG, "Service : " + gatt.getServices().toString());
+                Log.i(TAG, "Service : " + mBluetoothGatt.getServices().toString());
 
-                List<BluetoothGattService> services = gatt.getServices();
+                List<BluetoothGattService> services = mBluetoothGatt.getServices();
                 List<BluetoothGattCharacteristic> gattCharacteristics;
-                //ArrayList<BluetoothGattCharacteristic> charas;
+
                 charas = new ArrayList<>();
+
                 for (BluetoothGattService gattService : services) {
-                   // Log.i(TAG, "---------------------------------------------------------- : ");
-                   // Log.i(TAG, "Service : " + gattService);
                     gattCharacteristics = gattService.getCharacteristics();
                     for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                       // gatt.readCharacteristic(gattCharacteristic);
                         charas.add(gattCharacteristic);
-                      //  Log.i(TAG, "Chara uuid    : " + gattCharacteristic.getUuid());
-                       // Log.i(TAG, "read attempt  : " + gatt.readCharacteristic(gattCharacteristic));
-                   //   Log.i(TAG, "Write attempt : " + gatt.writeCharacteristic(gattCharacteristic));
-                      //  Log.i(TAG, "permission    : " + gattCharacteristic.getPermissions());
 
-                        // recpère le nom
-                       /* if(gattCharacteristic.getUuid().toString().equalsIgnoreCase("3347ab01-fb94-11e2-a8e4-f23c91aec05e")) {
-
-                            gatt.get
-                            Log.i(TAG, "lecture : " + gatt.readCharacteristic(gattCharacteristic));
-
+                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(txDataUUID)){
+                            txData = gattCharacteristic;
                         }
-                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase("3347aad2-fb94-11e2-a8e4-f23c91aec05e")) {
-                            Log.i(TAG, "test");
-                            Log.i(TAG, "ca" + gatt.readCharacteristic(gattCharacteristic));
+
+                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(rxDataUUID)){
+                            rxData = gattCharacteristic;
                         }
-                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase("3347AAB2-FB94-11E2-A8E4-F23C91AEC05E")) {
-                            Log.i(TAG, "Write attempt : " + gatt.writeCharacteristic(gattCharacteristic));
-                        }*/
+
+                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(txReadUUID)){
+                            txRead = gattCharacteristic;
+                        }
+
+                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(rxReadUUID)){
+                            rxRead = gattCharacteristic;
+                        }
+
+                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(txBinaryUUID)){
+                            txBinary = gattCharacteristic;
+                        }
+
+                        if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(rxBinaryUUID)){
+                            rxBinary = gattCharacteristic;
+                        }
                     }
                 }
             }
         }
-
-       /* @Override
-        public void onCharacteristicRead(BluetoothGatt gatt,BluetoothGattCharacteristic characteristic, int status) {
-            if (status == BluetoothGatt.GATT_SUCCESS) {
-               // Log.i(TAG, "Read chara : ----------------------------");
-                Log.i(TAG, characteristic.getStringValue(0));
-                //Log.i(TAG, "Read chara : ----------------------------");
-            }
-        }*/
-
-       /* @Override
-        public void onCharacteristicChanged(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-        }*/
-
-      /*  @Override
-        public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            Log.i(TAG, "cacacacacaca : ");
-            super.onCharacteristicWrite(gatt, characteristic, status);
-            boolean stat = characteristic.setValue("0");
-            Log.i(TAG, "Write result : " + stat);
-        }*/
     };
 
     private ScanCallback mLeScanCallback =
@@ -225,45 +258,99 @@ public class MainActivity extends AppCompatActivity {
                 public void onScanFailed(int errorCode) {
                     super.onScanFailed(errorCode);
                 }
+
+
             };
+
+
+    private void sendData(String data){
+
+        int i = 0;
+
+        // Défini le type de données (byte ou ASCII).
+        rxBinary.setValue(new byte[]{0x01});
+        while(mBluetoothGatt.writeCharacteristic(rxBinary)!= true){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
+
+        // Envoi des données.
+        rxData.setValue(data);
+        while(mBluetoothGatt.writeCharacteristic(rxData) != true);{
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
+
+
+        /*rxBinary.setValue(new byte[]{0x01});
+        mBluetoothGatt.writeCharacteristic(rxBinary);
+        while(!WRITE_OK);
+
+
+
+
+        rxData.setValue(data);
+        mBluetoothGatt.writeCharacteristic(rxData);
+        while(!WRITE_OK);
+
+        WRITE_OK = false;*/
+
+
+
+
+    }
+
+    private void writeTest(){
+        rxBinary.setValue(new byte[]{0x01});
+        mBluetoothGatt.writeCharacteristic(rxBinary);
+        try {Thread.sleep(200);}
+        catch(Exception e){}
+
+        rxData.setValue("test");
+        mBluetoothGatt.writeCharacteristic(rxData);
+        try {Thread.sleep(200);}
+        catch(Exception e){}
+    }
+
+    private String readData(){
+
+        String valueToReturn = "";
+
+        
+
+        while(mBluetoothGatt.readCharacteristic(txData) != true);
+
+        while(txData.getValue() == null);
+
+        return new String(txData.getValue());
+    }
 
     private void readTest(){
         resultTextView.setText("read en cours");
+        mBluetoothGatt.readCharacteristic(txData);
+        try {Thread.sleep(200);}
+        catch(Exception e){}
 
-        BluetoothGattCharacteristic ch;
-        for (BluetoothGattCharacteristic gattCharacteristic : charas) {
-            if( gattCharacteristic.getUuid().toString().equals("3347ab01-fb94-11e2-a8e4-f23c91aec05e")) {
-                ch =  gattCharacteristic;
-                mBluetoothGatt.readCharacteristic(gattCharacteristic);
-                Log.i(TAG, "Chara uuid    : " + ch.getUuid());
-
-                if(ch.getValue() != null) {
-                    Log.i(TAG, "Chara value   : " + new String(ch.getValue()));
-                }
-
-               /* for (BluetoothGattDescriptor descriptor:gattCharacteristic.getDescriptors()){
-                    //mBluetoothGatt.readDescriptor(descriptor);
-                    Log.e(TAG, "BluetoothGattDescriptor : " + descriptor.getUuid().toString() + " Value : " + descriptor.getValue());
-                }*/
-
-                //
-            }
-
-            if(gattCharacteristic.getUuid().toString().equals("3347AB02-FB94-11E2-A8E4-F23C91AEC05E")){
-                ch =  gattCharacteristic;
-                byte uncompressed[] = ("sdadsa").getBytes();
-                ch.setValue(uncompressed);
-                mBluetoothGatt.writeCharacteristic(ch);
-            }
+        if(txData.getValue() != null) {
+            Log.i(TAG, "Chara value   : " + new String(txData.getValue()));
+            resultTextView.setText("Chara value   : " + new String(txData.getValue()));
+            // On prévient qu'on a bien pu lire.
+            txRead.setValue(new byte[]{0x01});
+            mBluetoothGatt.writeCharacteristic(txRead);
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    // Listener
     private OnClickListener startScanListener = new OnClickListener() {
 
         @Override
         public void onClick(View v) {
             resultTextView.setText("start");
             mBluetoothLeScanner.startScan(mLeScanCallback);
+            btnStopScan.setEnabled(true);
+            btnRead.setEnabled(true);
+            btnDisconnect.setEnabled(true);
         }
     };
 
@@ -278,8 +365,42 @@ public class MainActivity extends AppCompatActivity {
     private OnClickListener btnReadListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            resultTextView.setText("read");
-            readTest();
+            resultTextView.setText(readData());
+            //readTest();
+        }
+    };
+
+    private OnClickListener btnWriteListener = new OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            resultTextView.setText("write");
+           // writeTest();
+            mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
+
+
+
+            Log.i(TAG, "Appel fonction d'envoi.");
+
+            new Thread(new Runnable() {
+                public void run() {
+                    for(int i = 0; i <= 210; i++){
+                        Integer tmpInt = i;
+                        sendData("" + tmpInt.toString());
+                    }
+                }
+            }).start();
+
+
+/*
+            for(int i = 0; i < 2; i++){
+                Integer tmpInt = i;
+                sendData("test" + tmpInt.toString());
+                while(true){
+                    if(readData().equalsIgnoreCase("ok" + tmpInt.toString()))
+                        break;
+                }
+
+            }*/
         }
     };
 
@@ -288,8 +409,9 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             resultTextView.setText("disconnected");
             Log.i(TAG, "BLEd device disconnected.");
-            //mBluetoothGatt.close();
+            mBluetoothGatt.close();
             mBluetoothGatt.disconnect();
+
         }
     };
 }

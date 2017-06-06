@@ -4,6 +4,7 @@
     android:id="@+id/linearLayoutID"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
+    android:background="@color/colorPrimaryDark"
     android:orientation="vertical"
     android:weightSum="1">
 
@@ -12,44 +13,64 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:checkedButton="@+id/radio2"
-        android:orientation="horizontal"
-        ></RadioGroup>
+        android:orientation="horizontal"></RadioGroup>
 
     <TextView
         android:id="@+id/txvResult"
         android:layout_width="fill_parent"
         android:layout_height="257dp"
+        android:layout_weight="0.85"
+        android:background="@color/colorPrimaryDark"
         android:text="Results"
-        android:layout_weight="0.85" />
+        android:textColor="@color/colorPrimary" />
 
     <Button
-        android:id="@+id/btnDisconnect"
+        android:id="@+id/btnWrite"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/button_red"
+        android:elevation="20dp"
         android:enabled="true"
-        android:text="Disconnect"
+        android:text="Write"
+        android:textColor="@color/colorPrimary"
         android:visibility="visible" />
 
     <Button
         android:id="@+id/btnRead"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/button_red"
         android:enabled="true"
         android:text="Read"
+        android:textColor="@color/colorPrimary"
+        android:visibility="visible" />
+
+    <Button
+        android:id="@+id/btnDisconnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_red"
+        android:elevation="20dp"
+        android:enabled="true"
+        android:text="Disconnect"
+        android:textColor="@color/colorPrimary"
         android:visibility="visible" />
 
     <Button
         android:id="@+id/btnStopScan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Stop scan" />
+        android:background="@drawable/button_red"
+        android:text="Stop scan"
+        android:textColor="@color/colorPrimary" />
 
     <Button
         android:id="@+id/btnStartScan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Start scan" />
-
+        android:background="@drawable/button_red"
+        android:text="Start scan"
+        android:textColor="@color/colorPrimary" />
 
 
 </LinearLayout>
