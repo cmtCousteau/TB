@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/linearLayoutID"
@@ -28,9 +30,9 @@
         android:id="@+id/btnWrite"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_red"
+        android:background="@drawable/button_disable"
         android:elevation="20dp"
-        android:enabled="true"
+        android:enabled="false"
         android:text="Write"
         android:textColor="@color/colorPrimary"
         android:visibility="visible" />
@@ -39,8 +41,8 @@
         android:id="@+id/btnRead"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_red"
-        android:enabled="true"
+        android:background="@drawable/button_disable"
+        android:enabled="false"
         android:text="Read"
         android:textColor="@color/colorPrimary"
         android:visibility="visible" />
@@ -49,18 +51,17 @@
         android:id="@+id/btnDisconnect"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_red"
-        android:elevation="20dp"
-        android:enabled="true"
+        android:background="@drawable/button_disable"
+        android:enabled="false"
         android:text="Disconnect"
-        android:textColor="@color/colorPrimary"
-        android:visibility="visible" />
+        android:textColor="@color/colorPrimary" />
 
     <Button
         android:id="@+id/btnStopScan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/button_red"
+        android:background="@drawable/button_disable"
+        android:enabled="false"
         android:text="Stop scan"
         android:textColor="@color/colorPrimary" />
 

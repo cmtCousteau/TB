@@ -15,7 +15,9 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothGattDescriptor;
 
 
+
 import android.content.Intent;
+import android.media.audiofx.AudioEffect;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -28,7 +30,10 @@ import android.content.Context;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.lang.Thread;
+import java.nio.charset.*;
 import java.util.UUID;
+
 
 
 public class MainActivity extends AppCompatActivity {
@@ -62,11 +67,12 @@ public class MainActivity extends AppCompatActivity {
     private BluetoothGattCharacteristic txBinary;
     private BluetoothGattCharacteristic rxBinary;
 
-    private boolean WRITE_OK = false;
+    private boolean READ_OK = false;
 
     private int mStatus;
 
     private Handler mHandler;
+
 
     public static final int REQUEST_BT_PERMISSIONS = 0;
     public static final int REQUEST_BT_ENABLE = 1;
@@ -76,6 +82,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
         setContentView(R.layout.activity_main);
 
         mHandler = new Handler();
@@ -104,8 +111,6 @@ public class MainActivity extends AppCompatActivity {
         btnRead.setEnabled(false);
         btnDisconnect.setEnabled(false);
         btnStopScan.setEnabled(false);
-
-
 
         this.mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
@@ -151,6 +156,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private final BluetoothGattCallback mGattCallback = new BluetoothGattCallback() {
+
+        @Override
+        public void onDescriptorRead(BluetoothGatt gatt, BluetoothGattDescriptor descriptor, int status){
+            READ_OK = true;
+        }
+
         @Override
         public void onConnectionStateChange(BluetoothGatt gatt, int status, int newState) {
 
@@ -172,20 +183,19 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicWrite(gatt, characteristic, status);
-            WRITE_OK = true;
-            //Log.i(TAG, "Write callback : " + status);
+            Log.i(TAG, "Write callback : " + status);
         }
 
         @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-            super.onCharacteristicRead(gatt, characteristic, status);
-           // Log.i(TAG, "Read status : " + status);
+           // super.onCharacteristicRead(gatt, characteristic, status);
+            Log.i(TAG, "Read status : " + status);
+            READ_OK = true;
         }
 
         @Override
         public void onCharacteristicChanged (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic){
-          //  Log.i(TAG, "Read status : " + characteristic.getValue());
+            Log.i(TAG, "Read status : " + "CHANGED" + " new value : " + new String(characteristic.getValue()));
         }
 
         @Override
@@ -196,12 +206,10 @@ public class MainActivity extends AppCompatActivity {
                 List<BluetoothGattService> services = mBluetoothGatt.getServices();
                 List<BluetoothGattCharacteristic> gattCharacteristics;
 
-                charas = new ArrayList<>();
 
                 for (BluetoothGattService gattService : services) {
                     gattCharacteristics = gattService.getCharacteristics();
                     for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
-                        charas.add(gattCharacteristic);
 
                         if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(txDataUUID)){
                             txData = gattCharacteristic;
@@ -251,6 +259,16 @@ public class MainActivity extends AppCompatActivity {
                         // Connection au gatt
                         mBluetoothGatt = device.connectGatt(MainActivity.this, false, mGattCallback);
                         mBluetoothLeScanner.stopScan(mLeScanCallback);
+
+                        // Comme on est connecté on active les autres boutons.
+                        btnRead.setEnabled(true);
+                        btnRead.setBackground(getContext().getResources().getDrawable(R.drawable.button_red, null));
+
+                        btnWrite.setEnabled(true);
+                        btnWrite.setBackground(getContext().getResources().getDrawable(R.drawable.button_red, null));
+
+                        btnDisconnect.setEnabled(true);
+                        btnDisconnect.setBackground(getContext().getResources().getDrawable(R.drawable.button_red, null));
                     }
                 }
 
@@ -258,21 +276,10 @@ public class MainActivity extends AppCompatActivity {
                 public void onScanFailed(int errorCode) {
                     super.onScanFailed(errorCode);
                 }
-
-
             };
 
 
     private void sendData(String data){
-
-        int i = 0;
-
-        // Défini le type de données (byte ou ASCII).
-        rxBinary.setValue(new byte[]{0x01});
-        while(mBluetoothGatt.writeCharacteristic(rxBinary)!= true){
-            try {Thread.sleep(1);}
-            catch(Exception e){}
-        }
 
         // Envoi des données.
         rxData.setValue(data);
@@ -280,64 +287,114 @@ public class MainActivity extends AppCompatActivity {
             try {Thread.sleep(1);}
             catch(Exception e){}
         }
-
-
-        /*rxBinary.setValue(new byte[]{0x01});
-        mBluetoothGatt.writeCharacteristic(rxBinary);
-        while(!WRITE_OK);
-
-
-
-
-        rxData.setValue(data);
-        mBluetoothGatt.writeCharacteristic(rxData);
-        while(!WRITE_OK);
-
-        WRITE_OK = false;*/
-
-
-
-
     }
 
-    private void writeTest(){
-        rxBinary.setValue(new byte[]{0x01});
-        mBluetoothGatt.writeCharacteristic(rxBinary);
-        try {Thread.sleep(200);}
-        catch(Exception e){}
-
-        rxData.setValue("test");
-        mBluetoothGatt.writeCharacteristic(rxData);
-        try {Thread.sleep(200);}
-        catch(Exception e){}
-    }
-
-    private String readData(){
-
-        String valueToReturn = "";
-
-        
-
-        while(mBluetoothGatt.readCharacteristic(txData) != true);
-
-        while(txData.getValue() == null);
-
-        return new String(txData.getValue());
-    }
-
-    private void readTest(){
-        resultTextView.setText("read en cours");
-        mBluetoothGatt.readCharacteristic(txData);
-        try {Thread.sleep(200);}
-        catch(Exception e){}
-
-        if(txData.getValue() != null) {
-            Log.i(TAG, "Chara value   : " + new String(txData.getValue()));
-            resultTextView.setText("Chara value   : " + new String(txData.getValue()));
-            // On prévient qu'on a bien pu lire.
-            txRead.setValue(new byte[]{0x01});
-            mBluetoothGatt.writeCharacteristic(txRead);
+    private String readRxRead(){
+        while(mBluetoothGatt.readCharacteristic(rxRead) != true){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
         }
+
+        while(READ_OK == false){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
+        READ_OK = false;
+
+        Byte var = rxRead.getValue()[0];
+        Log.i(TAG, "Value : " +  var.toString());
+        return var.toString();
+    }
+
+
+    private String readTxData(){
+        if(mBluetoothGatt == null)
+            return "Error";
+
+        while(mBluetoothGatt.readCharacteristic(txData) != true){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
+
+        while(READ_OK == false){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
+        READ_OK = false;
+
+        String data = new String(txData.getValue());
+
+        // Sorcellerie
+       /* UUID uuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+        BluetoothGattDescriptor descriptor = txData.getDescriptor(uuid);
+        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        mBluetoothGatt.writeDescriptor(descriptor);
+
+        mBluetoothGatt.setCharacteristicNotification(txData,true);
+        txData.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);*/
+
+        for(BluetoothGattDescriptor descriptor : txData.getDescriptors()){
+            mBluetoothGatt.readDescriptor(descriptor);
+            while(READ_OK == false){
+                try {Thread.sleep(1);}
+                catch(Exception e){}
+            }
+            READ_OK = false;
+
+            Log.i(TAG, "Descriptor : " +  new String(descriptor.getValue()));
+        }
+
+
+        txRead.setValue(new byte[]{0x01});
+        mBluetoothGatt.writeCharacteristic(txRead);
+
+        Log.i(TAG, "Value : " +  data);
+
+        return data;
+    }
+
+    private void setDataAscii(){
+        // Défini le type de données (byte ou ASCII).
+        rxBinary.setValue(new byte[]{0x01});
+        while(mBluetoothGatt.writeCharacteristic(rxBinary)!= true){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
+    }
+
+    private void demo(){
+
+        String tmp;
+
+        sendData("Voltage");
+        tmp = readTxData();
+        resultTextView.setText("Voltage : " + tmp + "v");
+
+        sendData("Courant");
+        tmp = readTxData();
+        resultTextView.setText(resultTextView.getText() + "\nCourant : " + tmp + "A");
+
+        sendData("Cosphi");
+        tmp = readTxData();
+        resultTextView.setText(resultTextView.getText() + "\nCosphi : " + tmp);
+
+        sendData("PuissanceInst");
+        tmp = readTxData();
+        resultTextView.setText(resultTextView.getText() + "\nPuissance instantanée : " + tmp + "Wh");
+
+        sendData("Frequence");
+        tmp = readTxData();
+        resultTextView.setText(resultTextView.getText() + "\nFrequence : " + tmp + "Hz");
+
+        sendData("PuissanceAgre");
+        tmp = readTxData();
+        resultTextView.setText(resultTextView.getText() + "\nPuissance agrégée : " + tmp + "kWh");
+
+        sendData("Uptime");
+        tmp = readTxData();
+        resultTextView.setText(resultTextView.getText() + "\nUptime : " + tmp + "h");
+
+
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -348,9 +405,9 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View v) {
             resultTextView.setText("start");
             mBluetoothLeScanner.startScan(mLeScanCallback);
+
             btnStopScan.setEnabled(true);
-            btnRead.setEnabled(true);
-            btnDisconnect.setEnabled(true);
+            btnStopScan.setBackground(getContext().getResources().getDrawable(R.drawable.button_red, null));
         }
     };
 
@@ -365,42 +422,59 @@ public class MainActivity extends AppCompatActivity {
     private OnClickListener btnReadListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            resultTextView.setText(readData());
-            //readTest();
+
+            /*if(mBluetoothGatt == null) {
+                resultTextView.setText("Read error");
+                return;
+            }*/
+
+            //setDataAscii();
+            //demo();
+            resultTextView.setText(readTxData());
         }
     };
+
+
 
     private OnClickListener btnWriteListener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            resultTextView.setText("write");
-           // writeTest();
+
+            if(mBluetoothGatt == null){
+                resultTextView.setText("Write error");
+                return;
+            }
+
             mBluetoothGatt.requestConnectionPriority(BluetoothGatt.CONNECTION_PRIORITY_HIGH);
 
-
-
             Log.i(TAG, "Appel fonction d'envoi.");
-
-            new Thread(new Runnable() {
+            Thread tSend = new Thread(new Runnable() {
                 public void run() {
-                    for(int i = 0; i <= 210; i++){
+
+                    setDataAscii();
+                    for(int i = 0; i <= 9; i++){
+                       // resultTextView.setText("Sending data " + i + "/" + "200");
                         Integer tmpInt = i;
-                        sendData("" + tmpInt.toString());
+                        sendData("abcdefghijkl" + tmpInt.toString());
+
+                        /*while(!readTxData().equalsIgnoreCase(tmpInt.toString())){
+                            try {Thread.sleep(1);}
+                            catch(Exception e){}
+                        }*/
                     }
                 }
-            }).start();
+            });
+
+            tSend.start();
 
 
-/*
-            for(int i = 0; i < 2; i++){
-                Integer tmpInt = i;
-                sendData("test" + tmpInt.toString());
-                while(true){
-                    if(readData().equalsIgnoreCase("ok" + tmpInt.toString()))
-                        break;
-                }
+           try {
+                tSend.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
-            }*/
+            resultTextView.setText("Sending data terminated !");
         }
     };
 
@@ -411,6 +485,18 @@ public class MainActivity extends AppCompatActivity {
             Log.i(TAG, "BLEd device disconnected.");
             mBluetoothGatt.close();
             mBluetoothGatt.disconnect();
+
+            btnRead.setEnabled(false);
+            btnRead.setBackground(getContext().getResources().getDrawable(R.drawable.button_disable, null));
+
+            btnWrite.setEnabled(false);
+            btnWrite.setBackground(getContext().getResources().getDrawable(R.drawable.button_disable, null));
+
+            btnStopScan.setEnabled(false);
+            btnStopScan.setBackground(getContext().getResources().getDrawable(R.drawable.button_disable, null));
+
+            btnDisconnect.setEnabled(false);
+            btnDisconnect.setBackground(getContext().getResources().getDrawable(R.drawable.button_disable, null));
 
         }
     };
