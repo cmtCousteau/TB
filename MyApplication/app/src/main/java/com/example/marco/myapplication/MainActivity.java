@@ -209,6 +209,9 @@ public class MainActivity extends AppCompatActivity {
 
                 for (BluetoothGattService gattService : services) {
                     gattCharacteristics = gattService.getCharacteristics();
+
+
+
                     for (BluetoothGattCharacteristic gattCharacteristic : gattCharacteristics) {
 
                         if(gattCharacteristic.getUuid().toString().equalsIgnoreCase(txDataUUID)){
@@ -325,7 +328,7 @@ public class MainActivity extends AppCompatActivity {
         String data = new String(txData.getValue());
 
         // Sorcellerie
-       /* UUID uuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+       /* UUID uuid = UUID.fromString("k");
         BluetoothGattDescriptor descriptor = txData.getDescriptor(uuid);
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         mBluetoothGatt.writeDescriptor(descriptor);
