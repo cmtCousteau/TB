@@ -144,7 +144,7 @@ public class StartMenu extends AppCompatActivity {
     }
 
 
-    // Create a BroadcastReceiver for ACTION_FOUND.
+
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
@@ -155,7 +155,7 @@ public class StartMenu extends AppCompatActivity {
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
 
                 int  rssi = intent.getShortExtra(BluetoothDevice.EXTRA_RSSI,Short.MIN_VALUE);
-                String deviceName = device.getName();
+                String deviceName = "s/n : " + device.getName();
                 String deviceHardwareAddress = device.getAddress(); // MAC address
 
                 if(!listDeviceFound.contains(deviceName)) {

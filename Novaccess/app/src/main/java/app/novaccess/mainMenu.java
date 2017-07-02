@@ -58,6 +58,9 @@ public class mainMenu extends AppCompatActivity {
         Button btnResourcesIndex = (Button) findViewById(R.id.btnResourcesIndex);
         btnResourcesIndex.setOnClickListener(btnResourcesIndexClick);
 
+        Button btnParametersIndex = (Button) findViewById(R.id.btnParametersIndex);
+        btnParametersIndex.setOnClickListener(btnParametersIndexClick);
+
         Button btnDisconnect = (Button) findViewById(R.id.btnDisconnect);
         btnDisconnect.setOnClickListener(btnDisconnectClick);
 
@@ -88,6 +91,7 @@ public class mainMenu extends AppCompatActivity {
 
 
 
+
     private  View.OnClickListener btnDisconnectClick = new View.OnClickListener(){
 
         @Override
@@ -102,6 +106,16 @@ public class mainMenu extends AppCompatActivity {
 
 
             Intent IntentStartMenuIntent = new Intent(getContext(), StartMenu.class);
+            startActivity(IntentStartMenuIntent);
+        }
+    };
+
+    private  View.OnClickListener btnParametersIndexClick = new View.OnClickListener(){
+
+        @Override
+        public void onClick(View v) {
+
+            Intent IntentStartMenuIntent = new Intent(getContext(), ParametersIndex.class);
             startActivity(IntentStartMenuIntent);
         }
     };

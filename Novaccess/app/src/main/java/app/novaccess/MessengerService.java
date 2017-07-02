@@ -180,6 +180,7 @@ public class MessengerService extends Service {
 
         if (mBluetoothAdapter == null || address == null) {
             Log.w(TAG, "BluetoothAdapter not initialized or unspecified address.");
+
             return false;
         }
 
