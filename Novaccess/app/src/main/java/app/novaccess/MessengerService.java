@@ -147,6 +147,9 @@ public class MessengerService extends Service {
 
 
     public void startDiscovery(){
+        if(mBluetoothAdapter.isDiscovering())
+            mBluetoothAdapter.cancelDiscovery();
+
         mBluetoothAdapter.startDiscovery();
     }
 
