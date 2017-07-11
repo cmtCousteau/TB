@@ -16,21 +16,24 @@
 #include <stdbool.h>
 #include "SaBLExAPITypes.h"
 
-#define TO_HEX(i) (i <= 9 ? '0' + i : 'A' -10 + i) 
+#define TO_HEX(i) (i <= 9 ? '0' + i : 'A' -10 + i)
 
-bool OpenCOM(int nId);
+bool openCOM(int);
 bool CloseCOM();
-bool ReadCOM(void* buffer, int nBytesToRead, long unsigned int* pBytesRead);
-bool WriteCOM(void* buffer, int nBytesToWrite,long unsigned int* pBytesWritten);
+bool ReadCOM(char*, int, long unsigned int*);
+bool WriteCOM(void*, int,long unsigned int*);
+
+void UartProcessor_WriteTxMessage(char*);
 
 unsigned short UartProcessor_crcByte(uint16_t u16fcs, uint8_t u8c);
 unsigned short UartProcessor_calculateCrc(char* pcMessage);
+unsigned short crc16(const unsigned char* data_p, unsigned char length);
 
 /*=============================================================================
   Définition de constantes
 =============================================================================*/
 #define RX_SIZE         4096    /* taille tampon d'entrée  */
-#define TX_SIZE         4096    /* taille tampon de sortie */
+#define TX_SIZE         2048    /* taille tampon de sortie */
 #define MAX_WAIT_READ   5000    /* temps max d'attente pour lecture (en ms) */
 
 

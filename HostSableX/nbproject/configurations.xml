@@ -10,6 +10,7 @@
       <itemPath>SaBLExAPI_OutgoingMsg_Common.h</itemPath>
       <itemPath>SaBLExAPI_OutgoingMsg_Peripheral.h</itemPath>
       <itemPath>SaBLExAPI_Shared.h</itemPath>
+      <itemPath>command.h</itemPath>
       <itemPath>json.h</itemPath>
       <itemPath>rs232.h</itemPath>
     </logicalFolder>
@@ -25,6 +26,7 @@
       <itemPath>SaBLExAPI_OutgoingMsg_Common.c</itemPath>
       <itemPath>SaBLExAPI_OutgoingMsg_Peripheral.c</itemPath>
       <itemPath>SaBLExAPI_Shared.c</itemPath>
+      <itemPath>command.c</itemPath>
       <itemPath>json.c</itemPath>
       <itemPath>main.c</itemPath>
       <itemPath>rs232.c</itemPath>
@@ -53,6 +55,9 @@
         <cTool>
           <standard>3</standard>
         </cTool>
+        <ccTool>
+          <commandlineTool>gcc</commandlineTool>
+        </ccTool>
       </compileType>
       <item path="SaBLExAPITypes.h" ex="false" tool="3" flavor2="0">
       </item>
@@ -75,6 +80,10 @@
       <item path="SaBLExAPI_Shared.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="SaBLExAPI_Shared.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="command.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="command.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="json.c" ex="false" tool="0" flavor2="0">
       </item>
@@ -129,6 +138,10 @@
       <item path="SaBLExAPI_Shared.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="SaBLExAPI_Shared.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="command.c" ex="false" tool="0" flavor2="0">
+      </item>
+      <item path="command.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="json.c" ex="false" tool="0" flavor2="0">
       </item>

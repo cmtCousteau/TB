@@ -21,46 +21,91 @@
 #include "rs232.h"
 #include "SaBLExAPI_OutgoingMsg_Peripheral.h"
 #include "SaBLExAPI_OutgoingMsg_Common.h"
+#include "command.h"
 
 
+void viderBuffer()
+{
+    int c = 0;
+    while (c != '\n' && c != EOF)
+    {
+        c = getchar();
+    }
+}
 
 int main(int argc, char** argv) {
     
+    char choix = "";
     int portCOMId;
-    
-    params_SetLpmParamsOut_t lpmParam;
-    lpmParam.SaveToNv = true;
-    lpmParam.SleepTime = 65535;
-    lpmParam.SaveToNv = false;
-    
-    params_SetAdvertisingEnableOut_t paramAdvertisingEnable;
-    paramAdvertisingEnable.AdvertisingEnable = false;
-    paramAdvertisingEnable.SaveToNv = true;
-
-    uint8_t u8MsgId = 1;
+    int choixDecimal = 0;
+    uint8_t u8MsgId = 1;   
     
     printf("List des ports COM disponibles : \n");
     printf("--------------------------------\n");
     
     for(int i = 0; i < 10; i++){
-        if(OpenCOM(i) == true){
+        if(fastOpenCOM(i) == true){
             printf("Port COM : %d\n", i);
-            CloseCOM();
         }
     }
-    
     do{
         printf("Choisissez un port COM auquel se connecter : ");
         scanf("%d", &portCOMId);
-        
-    }while(OpenCOM(portCOMId) == false);
+    }while(openCOM(portCOMId) == false);
     
     HostAwakeOut ();
-    SetLpmParamsOut(u8MsgId, &lpmParam);
-    SetAdvertisingEnableOut(++u8MsgId, &paramAdvertisingEnable);
+    //SetLpmParamsOut(u8MsgId, &lpmParam);
+    
+    //sendSetAdvertisingParamsOut(++u8MsgId, 7, "5361424C452D78", 160, 1, true, "5361424C452D782053657269616C2D746F2D424C45");
+    
+    do{
+        printf("--------------------------\n");
+        printf("Configuration des advertising (G)\n");
+        printf("Activation des advertising (A)\n");
+        printf("Desactivation des advertising (D)\n");
+        printf("Choix du heartbeat (B)\n");
+        printf("Envoyer des data (E)");
+        printf("Quitter (Q)\n");
+        printf("Choix : ");
+        viderBuffer();
+        scanf("%c", &choix);
+        
+        if(choix == 'G' || choix == 'g'){
+        
+            printf("Choix de l'interval d'avertising : ");
+            scanf("%d", &choixDecimal);            
+            sendSetAdvertisingParamsOut(++u8MsgId, 7, "5361424C452D78", choixDecimal, 1, true, "5361424C452D782053657269616C2D746F2D424C45");
+        }
+        
+        if(choix == 'A' || choix == 'a')
+            sendSetAdvertisingEnableOut(++u8MsgId,true,true);
+        if(choix == 'D' || choix == 'd')
+            sendSetAdvertisingEnableOut(++u8MsgId,false,true);
+        if(choix == 'B' || choix == 'b'){
+            int valeurHeart;
+            printf("Valeur du hearbeat : ");
+            scanf("%d", &valeurHeart);
+            sendSetPeripheralLedBehaviorOut(++u8MsgId, valeurHeart, valeurHeart, true, false);
+        }
+        if(choix == 'E' || choix == 'e')
+            sendSendOtaDataOut(++u8MsgId, "salut");
+        
+            
+    }while(choix != 'Q' && choix != 'q');
+    
+    
+   /* int valeurHeart;
+    while(1){
+        scanf("%d", &valeurHeart);
+      //  paramLed.HeartbeatPeriod = valeur;
+      //  SetPeripheralLedBehaviorOut(++u8MsgId, &paramLed);
+        
+        sendSetPeripheralLedBehaviorOut(++u8MsgId, valeurHeart, valeurHeart, true, false);
+        
+    }*/
     
     CloseCOM();
-            
+
 
     return (EXIT_SUCCESS);
 }

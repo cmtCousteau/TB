@@ -137,6 +137,9 @@ void SetPeripheralLedBehaviorOut (uint8_t u8MsgId, params_SetPeripheralLedBehavi
 	/* # App Code Start # */
 	/* Send pTemp out UART */
 
+        UartProcessor_WriteTxMessage(pTemp);
+        
+        
 	/* # App Code End # */
 
 	/* Clean Up Memory */
@@ -296,7 +299,7 @@ void SetAdvertisingParamsOut (uint8_t u8MsgId, params_SetAdvertisingParamsOut_t*
 
 	/* # App Code Start # */
 	/* Send pTemp out UART */
-
+        UartProcessor_WriteTxMessage(pTemp);
 	/* # App Code End # */
 
 	/* Clean Up Memory */

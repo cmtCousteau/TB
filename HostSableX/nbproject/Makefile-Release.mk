@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/SaBLExAPI_OutgoingMsg_Common.o \
 	${OBJECTDIR}/SaBLExAPI_OutgoingMsg_Peripheral.o \
 	${OBJECTDIR}/SaBLExAPI_Shared.o \
+	${OBJECTDIR}/command.o \
 	${OBJECTDIR}/json.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/rs232.o
@@ -93,6 +94,11 @@ ${OBJECTDIR}/SaBLExAPI_Shared.o: SaBLExAPI_Shared.c
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/SaBLExAPI_Shared.o SaBLExAPI_Shared.c
+
+${OBJECTDIR}/command.o: command.c
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.c) -O2 -std=c99 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/command.o command.c
 
 ${OBJECTDIR}/json.o: json.c
 	${MKDIR} -p ${OBJECTDIR}

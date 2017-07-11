@@ -48,6 +48,7 @@
 #include "json.h"
 #include "SaBLExAPI_Shared.h"
 #include "SaBLExAPI_OutgoingMsg_Common.h"
+#include "rs232.h"
 
 
 /*********************************************************************
@@ -678,7 +679,7 @@ void SendOtaDataOut (uint8_t u8MsgId, params_SendOtaDataOut_t* params_SendOtaDat
 
 	/* # App Code Start # */
 	/* Send pTemp out UART */
-
+        UartProcessor_WriteTxMessage(pTemp);
 	/* # App Code End # */
 
 	/* Clean Up Memory */
