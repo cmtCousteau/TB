@@ -54,6 +54,17 @@ public class resourcesIndexMenu extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+
+            Intent intentMessage = new Intent();
+            intentMessage.putExtra("data", "salut");
+            msg = Message.obtain(null, MessengerService.WRITE_VALUE, intentMessage);
+            try {
+                mService.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+
+
         }
 
         public void onServiceDisconnected(ComponentName className) {
@@ -114,7 +125,7 @@ public class resourcesIndexMenu extends AppCompatActivity {
             listResourcesName.add("Test :");
             listResourcesValue.add(value);
 
-            Toast.makeText(getApplicationContext(), "Nombre appel : " + ++i, Toast.LENGTH_SHORT).show();
+          //  Toast.makeText(getApplicationContext(), "Nombre appel : " + ++i, Toast.LENGTH_SHORT).show();
 
             CustomListResources adapter = new CustomListResources(resourcesIndexMenu.this,listResourcesName,listResourcesValue);
             listResources.setAdapter(adapter);

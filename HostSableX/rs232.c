@@ -94,14 +94,7 @@ bool openCOM(int nId){
 
     /* construction du nom du port, tentative d'ouverture */
     sprintf(szCOM, "COM%d", nId);
-  /*  g_hCOM = CreateFile(szCOM, GENERIC_READ|GENERIC_WRITE, 0, NULL,
-                        OPEN_EXISTING, FILE_ATTRIBUTE_SYSTEM, NULL);
-    if(g_hCOM == INVALID_HANDLE_VALUE)
-    {
-        //printf("Erreur lors de l'ouverture du port COM%d", nId);
-        return FALSE;
-    }*/
-    
+  
     g_hCOM = CreateFile( szCOM,
                       GENERIC_READ | GENERIC_WRITE,
                       0,      //  must be opened with exclusive-access
@@ -138,11 +131,7 @@ bool CloseCOM()
 
 bool ReadCOM(char* buffer, int nBytesToRead, long unsigned int* pBytesRead)
 {
-    Sleep(200);
-    ReadFile(g_hCOM, buffer, nBytesToRead, pBytesRead, NULL);
-    buffer[(int)*pBytesRead] = '\0';
-    return true;
-    
+    return ReadFile(g_hCOM, buffer, nBytesToRead, pBytesRead, NULL);
 }
 
 bool WriteCOM(void* buffer, int nBytesToWrite,long unsigned int* pBytesWritten)
@@ -151,102 +140,59 @@ bool WriteCOM(void* buffer, int nBytesToWrite,long unsigned int* pBytesWritten)
     return WriteFile(g_hCOM, buffer, nBytesToWrite, pBytesWritten, NULL);
 }
 
-
-
-void readTest2(){
-    #define READ_TIMEOUT      1000      // milliseconds
-
-    DWORD dwRes;
-    DWORD dwRead;
-    BOOL fWaitingOnRead = TRUE;
-    OVERLAPPED osReader = {0};
-    char lpBuf[100];
-    int READ_BUF_SIZE = 100;
-    COMSTAT lpStat = {0};
-    DWORD error;
-    // Create the overlapped event. Must be closed before exiting
-    // to avoid a handle leak.
-    //osReader.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-     
-    
-    //sReadFile(g_hCOM, lpBuf, READ_BUF_SIZE, &dwRead, &osReader);
-   // dwRes = WaitForSingleObject(osReader.hEvent, READ_TIMEOUT);
-
-   
-   //ReadFile(g_hCOM, lpBuf, READ_BUF_SIZE, &dwRead, &osReader
-    
-    
-    
-    Sleep(200);
-    ReadFile(g_hCOM, lpBuf, READ_BUF_SIZE, &dwRead, NULL);
-    ClearCommError(g_hCOM, &error ,&lpStat); 
-    printf("%s\n", lpBuf);
-    printf("Queue : %d", lpStat.cbInQue);
-  /*  do{
-    
-       
-       
-    }while(lpStat.cbInQue != 0);*/
-
- 
-    
-    
-   // printf("Waiting in queue: %d", lpStat->cbInQue);
-    
- }
-
-
-
-void readTest(){
-    DWORD dwRead;
-    BOOL fWaitingOnRead = FALSE;
-    OVERLAPPED osReader = {0};
-    char lpBuf[100];
-    int READ_BUF_SIZE = 100;
-    
-
-    // Create the overlapped event. Must be closed before exiting
-    // to avoid a handle leak.
-    osReader.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-
-    if (osReader.hEvent == NULL){
-        printf("Error creating overlapped event; abort.\n");
-    }
-       // Error creating overlapped event; abort.
-
-    if (!fWaitingOnRead) {
-       // Issue read operation.
-       if (!ReadFile(g_hCOM, lpBuf, READ_BUF_SIZE, &dwRead, &osReader)) {
-          if (GetLastError() != ERROR_IO_PENDING){     // read not delayed?
-             // Error in communications; report it.
-          }
-          else{
-            fWaitingOnRead = TRUE;
-          }
-       }
-       else {    
-          // read completed immediately
-          //HandleASuccessfulRead(lpBuf, dwRead);
-          
-          printf("%s\n", lpBuf);
-        }
-    }
-
-}
-
-void UartProcessor_ReadTxMessage(char* pcMessage){
+void UartProcessor_ReadTxMessage(char* pcMessage, int bufferLenght){
     
     DWORD dwCommEvent = 0;
+    COMSTAT lpStat = {0};
+    DWORD error;
+    BOOL messageComplet = false;
     
-    WaitCommEvent(g_hCOM, &dwCommEvent, NULL);
-    printf("Event : %d\n", dwCommEvent);    
-    if(dwCommEvent== EV_RXCHAR){
-        
-        unsigned long int temp;
-        ReadCOM(pcMessage, 100, &temp);
-        printf("%s\n", pcMessage);
+    unsigned long int numberOfCharRead;
+    unsigned long int sizeOfMessage = 0;
+   
+    
+   // printf("wait\n");
+    
+    while(!messageComplet){
+    
+        WaitCommEvent(g_hCOM, &dwCommEvent, NULL);  
+        printf("Event : %d\n", dwCommEvent);
+
+        if(dwCommEvent == EV_RXCHAR){
+             ReadCOM(&pcMessage[sizeOfMessage], bufferLenght, &numberOfCharRead);
+             sizeOfMessage += numberOfCharRead;
+             
+             
+             //printf("%c, %c", pcMessage[sizeOfMessage-1], pcMessage[sizeOfMessage-2]);
+             
+             if(pcMessage[sizeOfMessage-1] == '}' && pcMessage[sizeOfMessage-2] == '}'){
+                 pcMessage[sizeOfMessage] = '\0';
+                 messageComplet = true;
+             }
+        }
     }
+    printf("Reception : ");
+    printf("%s\n", pcMessage);
     
+    /*WaitCommEvent(g_hCOM, &dwCommEvent, NULL);  
+    printf("Event : %d\n", dwCommEvent);
+
+    if(dwCommEvent == EV_RXCHAR){
+
+        ClearCommError(g_hCOM, &error ,&lpStat); 
+        ReadCOM(pcMessage, bufferLenght, &numberOfCharRead);
+       
+        while(lpStat.cbInQue > 0){
+            
+            ReadCOM(pcMessage, bufferLenght, &numberOfCharRead);
+            WaitCommEvent(g_hCOM, &dwCommEvent, NULL);
+            
+            ReadCOM(&pcMessage[sizeOfMessage], bufferLenght, &numberOfCharRead);
+            sizeOfMessage += numberOfCharRead;
+            ClearCommError(g_hCOM, &error ,&lpStat);
+        }
+        printf("%s\n", pcMessage);
+    }*/
 }
 
 void UartProcessor_WriteTxMessage(char* pcMessage){
@@ -254,10 +200,8 @@ void UartProcessor_WriteTxMessage(char* pcMessage){
 
     uint16_t u16crc = UartProcessor_calculateCrc(pcMessage);
     bool test;
-    
-    
     unsigned long int written;
-    
+
     int status = -1;
     
     char res[4];
@@ -267,29 +211,28 @@ void UartProcessor_WriteTxMessage(char* pcMessage){
     res[3] = TO_HEX((u16crc & 0x000F));
 
     
-    uint16_t u16MsgSize = strlen(pcMessage) + 12;
+    uint16_t u16MsgSize = strlen(pcMessage) + 13;
     char* pcMsg = malloc(u16MsgSize);
     //copy pcBuffer into pcMsg prior to bracketizing
     memcpy(pcMsg+1, pcMessage, strlen(pcMessage));
     
     //bracketize and add crc
     pcMsg[0] = '{';
-    pcMsg[u16MsgSize-1] = '}';
     pcMsg[u16MsgSize-2] = '}';
-    pcMsg[u16MsgSize-3] = res[3];
-    pcMsg[u16MsgSize-4] = res[2];
-    pcMsg[u16MsgSize-5] = res[1];
-    pcMsg[u16MsgSize-6] = res[0];
-    pcMsg[u16MsgSize-7] = ':';
-    pcMsg[u16MsgSize-8] = 'C';
-    pcMsg[u16MsgSize-9] = 'R';
-    pcMsg[u16MsgSize-10] = 'C';
-    pcMsg[u16MsgSize-11] = '{';
+    pcMsg[u16MsgSize-3] = '}';
+    pcMsg[u16MsgSize-4] = res[3];
+    pcMsg[u16MsgSize-5] = res[2];
+    pcMsg[u16MsgSize-6] = res[1];
+    pcMsg[u16MsgSize-7] = res[0];
+    pcMsg[u16MsgSize-8] = ':';
+    pcMsg[u16MsgSize-9] = 'C';
+    pcMsg[u16MsgSize-10] = 'R';
+    pcMsg[u16MsgSize-11] = 'C';
+    pcMsg[u16MsgSize-12] = '{';
+    pcMsg[u16MsgSize-1] = '\0';
 
-    printf("\n%s",pcMsg); 
+    printf("Envoi : %s\n",pcMsg); 
     WriteCOM(pcMsg, u16MsgSize, &written);
-    printf("\nEcrit : %d\n", written);
-
     free(pcMsg);  
 }
 
@@ -327,3 +270,6 @@ unsigned short crc16(const unsigned char* data_p, unsigned char length){
     }
     return crc;
 }
+
+
+

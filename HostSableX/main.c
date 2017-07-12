@@ -53,20 +53,24 @@ int main(int argc, char** argv) {
         scanf("%d", &portCOMId);
     }while(openCOM(portCOMId) == false);
     
-    HostAwakeOut ();
-    //SetLpmParamsOut(u8MsgId, &lpmParam);
+    //sendHostAwakeOut();
+    sendSetLpmParamsOut(u8MsgId, false, 65535, true);
     
     //sendSetAdvertisingParamsOut(++u8MsgId, 7, "5361424C452D78", 160, 1, true, "5361424C452D782053657269616C2D746F2D424C45");
+
+    //HANDLE thread = CreateThread(NULL, 0, thread_1, NULL, 0, NULL);
     
     do{
-        printf("--------------------------\n");
+        printf("------------------------------------\n");
         printf("Configuration des advertising (G)\n");
         printf("Activation des advertising (A)\n");
         printf("Desactivation des advertising (D)\n");
         printf("Choix du heartbeat (B)\n");
-        printf("Envoyer des data (E)");
+        printf("Envoyer des data (E)\n");
+        printf("Reception des data (R)\n");
         printf("Quitter (Q)\n");
         printf("Choix : ");
+        
         viderBuffer();
         scanf("%c", &choix);
         
@@ -77,8 +81,11 @@ int main(int argc, char** argv) {
             sendSetAdvertisingParamsOut(++u8MsgId, 7, "5361424C452D78", choixDecimal, 1, true, "5361424C452D782053657269616C2D746F2D424C45");
         }
         
-        if(choix == 'A' || choix == 'a')
+        if(choix == 'A' || choix == 'a'){
+            //SuspendThread(thread);
             sendSetAdvertisingEnableOut(++u8MsgId,true,true);
+        }
+            
         if(choix == 'D' || choix == 'd')
             sendSetAdvertisingEnableOut(++u8MsgId,false,true);
         if(choix == 'B' || choix == 'b'){
@@ -88,21 +95,14 @@ int main(int argc, char** argv) {
             sendSetPeripheralLedBehaviorOut(++u8MsgId, valeurHeart, valeurHeart, true, false);
         }
         if(choix == 'E' || choix == 'e')
-            sendSendOtaDataOut(++u8MsgId, "salut");
+            sendSendOtaDataOut(++u8MsgId, "test");
+        if(choix == 'R' || choix == 'r'){
+            readData();
+        }
         
             
     }while(choix != 'Q' && choix != 'q');
-    
-    
-   /* int valeurHeart;
-    while(1){
-        scanf("%d", &valeurHeart);
-      //  paramLed.HeartbeatPeriod = valeur;
-      //  SetPeripheralLedBehaviorOut(++u8MsgId, &paramLed);
-        
-        sendSetPeripheralLedBehaviorOut(++u8MsgId, valeurHeart, valeurHeart, true, false);
-        
-    }*/
+
     
     CloseCOM();
 

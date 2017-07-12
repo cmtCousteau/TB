@@ -52,6 +52,7 @@ public class MessengerService extends Service {
     static final int BLE_DISCONNECT = 5;
     static final int GET_CONNECTED_BLE_ADDRESS = 6;
     static final int READ_VALUE = 7;
+    static final int WRITE_VALUE =8;
 
     static String CONNECTED_ADDRESS;
 
@@ -115,6 +116,10 @@ public class MessengerService extends Service {
                 case READ_VALUE:
                    // String characteristic = ((Intent)msg.obj).getStringExtra("deviceAddress");
                     readCharacteristicString();
+                    break;
+                case WRITE_VALUE:
+                    String data = ((Intent)msg.obj).getStringExtra("data");
+                    writeCharacteristicString(data);
                     break;
                 default:
                     super.handleMessage(msg);
@@ -192,8 +197,7 @@ public class MessengerService extends Service {
             Log.w(TAG, "Device not found.  Unable to connect.");
             return false;
         }
-        // We want to directly connect to the device, so we are setting the autoConnect
-        // parameter to false.
+
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
         Log.d(TAG, "Trying to create a new connection.");
         mConnectionState = STATE_CONNECTING;
@@ -306,6 +310,23 @@ public class MessengerService extends Service {
         READ_CHARACTERISTIC_OK = false;*/
 
         //return  new String(characteristic.getValue());
+    }
+
+    public void writeCharacteristicString(String data){
+
+        //Défini le format des données (ASCII).
+        rxBinary.setValue(new byte[]{0x01});
+        while(mBluetoothGatt.writeCharacteristic(rxBinary)!= true){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
+
+    //    Toast.makeText(getApplicationContext(), "Write send", Toast.LENGTH_SHORT).show();
+        rxData.setValue(data);
+        while(mBluetoothGatt.writeCharacteristic(rxData)!= true){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
     }
 
 

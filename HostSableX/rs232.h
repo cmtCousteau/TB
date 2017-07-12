@@ -24,6 +24,7 @@ bool ReadCOM(char*, int, long unsigned int*);
 bool WriteCOM(void*, int,long unsigned int*);
 
 void UartProcessor_WriteTxMessage(char*);
+void UartProcessor_ReadTxMessage(char*, int);
 
 unsigned short UartProcessor_crcByte(uint16_t u16fcs, uint8_t u8c);
 unsigned short UartProcessor_calculateCrc(char* pcMessage);

@@ -16,6 +16,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+
 #include "rs232.h"
 #include "json.h"
 #include "SaBLExAPI_OutgoingMsg_Peripheral.h"
@@ -31,6 +32,14 @@ extern "C" {
         char* advertisingData, uint16_t advertisingInterval,
         uint8_t discoverableMode, bool saveToNv, char* scanResponseData);
     bool sendSetAdvertisingEnableOut(uint8_t u8MsgId, bool advertisingEnable, bool saveToNv);
+    bool sendHostAwakeOut();
+    bool sendSetLpmParamsOut(uint8_t, bool, uint16_t, bool);
+    
+    void readData();
+    
+    void startReadThread();
+    
+    DWORD WINAPI thread_1(void *);
     
     
 
