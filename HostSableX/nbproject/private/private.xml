@@ -9,10 +9,11 @@
         <group>
             <file>file:/E:/Ecole/TB/TB/HostSableX/main.c</file>
             <file>file:/E:/Ecole/TB/TB/HostSableX/command.h</file>
+            <file>file:/E:/Ecole/TB/TB/HostSableX/SaBLExAPI_Shared.h</file>
+            <file>file:/E:/Ecole/TB/TB/HostSableX/SaBLExAPI_IncomingMsg_Peripheral.c</file>
+            <file>file:/E:/Ecole/TB/TB/HostSableX/json.c</file>
             <file>file:/E:/Ecole/TB/TB/HostSableX/command.c</file>
             <file>file:/E:/Ecole/TB/TB/HostSableX/rs232.c</file>
-            <file>file:/E:/Ecole/TB/TB/HostSableX/SaBLExAPI_OutgoingMsg_Common.c</file>
-            <file>file:/E:/Ecole/TB/TB/HostSableX/SaBLExAPI_OutgoingMsg_Peripheral.c</file>
             <file>file:/E:/Ecole/TB/TB/HostSableX/rs232.h</file>
         </group>
     </open-files>

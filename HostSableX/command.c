@@ -28,8 +28,10 @@ bool sendSendOtaDataOut (uint8_t u8MsgId, char* data){
     SendOtaDataOut(u8MsgId, &params_SendOtaDataOut);
     
     char te[200];
+    char msg2[200];
     UartProcessor_ReadTxMessage(te, 200);
-    UartProcessor_ReadTxMessage(te, 200);
+    printf("-----------------\n");
+    UartProcessor_ReadTxMessage(msg2, 200);
 }
 
 bool sendSetAdvertisingParamsOut ( uint8_t u8MsgId, uint8_t advertisingChannels,
@@ -46,6 +48,8 @@ bool sendSetAdvertisingParamsOut ( uint8_t u8MsgId, uint8_t advertisingChannels,
     
     
     SetAdvertisingParamsOut (u8MsgId, &params_SetAdvertisingParamsOut);
+    char msg[200];
+    JsonNode *jsonMsg = UartProcessor_ReadTxMessage(msg, 200);
 }
 
 bool sendSetAdvertisingEnableOut(uint8_t u8MsgId, bool advertisingEnable, bool saveToNv){
@@ -55,8 +59,12 @@ bool sendSetAdvertisingEnableOut(uint8_t u8MsgId, bool advertisingEnable, bool s
     params_SetAdvertisingEnableOut.SaveToNv = saveToNv;      
 
     SetAdvertisingEnableOut (u8MsgId, &params_SetAdvertisingEnableOut);
-    char te[200];
-    UartProcessor_ReadTxMessage(te, 200);
+    char msg[200];
+    JsonNode *jsonMsg = UartProcessor_ReadTxMessage(msg, 200);
+  //  printf("%s\n", msg);
+//    SetAdvertisingEnableIn(pMsg);
+    
+    
 }
 
 bool sendHostAwakeOut(){
@@ -79,9 +87,21 @@ bool sendSetLpmParamsOut(uint8_t u8MsgId, bool wakeHost, uint16_t sleepTime, boo
 
 void readData(){
     char te[200];
+    
+    
+    
     UartProcessor_ReadTxMessage(te, 200);
     UartProcessor_ReadTxMessage(te, 200);
-    UartProcessor_ReadTxMessage(te, 200);
+    JsonNode *jsonMsg = UartProcessor_ReadTxMessage(te, 200);
+    
+    JsonNode *jsonParam = json_find_member (jsonMsg, "params");
+    JsonNode *jsonDataAscii = json_find_member (jsonParam, "DataAscii");
+      
+    printf("Data : %s", jsonDataAscii->number_);
+    
+    uint8_t u8MsgId = 10;
+    sendSendOtaDataOut( u8MsgId, "Blu");
+    
 }
 
 DWORD WINAPI thread_1(void *arg)

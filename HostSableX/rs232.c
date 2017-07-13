@@ -7,6 +7,8 @@
 /* Handle du port COM ouvert */
 HANDLE g_hCOM = NULL;
 
+int DEBUG = 0;
+
 /* Délais d'attente sur le port COM */
 COMMTIMEOUTS g_cto =
 {
@@ -51,6 +53,13 @@ static const uint16_t crcTable[256]  =
     0x7c26, 0x6c07, 0x5c64, 0x4c45, 0x3ca2, 0x2c83, 0x1ce0, 0x0cc1,
     0xef1f, 0xff3e, 0xcf5d, 0xdf7c, 0xaf9b, 0xbfba, 0x8fd9, 0x9ff8,
     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
+};
+
+const uint8_t hextable[256] = {
+  //[0 ... 255] = -1, // bit aligned access into this table is considerably
+  ['0'] = 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, // faster for most modern processors,
+  ['A'] = 10, 11, 12, 13, 14, 15,       // for the space conscious, reduce to
+  ['a'] = 10, 11, 12, 13, 14, 15        // signed char.
 };
 
 /******************************************************************************
@@ -140,39 +149,107 @@ bool WriteCOM(void* buffer, int nBytesToWrite,long unsigned int* pBytesWritten)
     return WriteFile(g_hCOM, buffer, nBytesToWrite, pBytesWritten, NULL);
 }
 
-void UartProcessor_ReadTxMessage(char* pcMessage, int bufferLenght){
+JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght){
+    
+    DEBUG++;
     
     DWORD dwCommEvent = 0;
     COMSTAT lpStat = {0};
     DWORD error;
-    BOOL messageComplet = false;
+    BOOL completMsg = false;
+    uint16_t receivedMsgCRC;
+    char* method;
+    char* receivedMsgWithoutCRC;
+    int i = 0;
     
     unsigned long int numberOfCharRead;
-    unsigned long int sizeOfMessage = 0;
-   
-    
-   // printf("wait\n");
-    
-    while(!messageComplet){
-    
-        WaitCommEvent(g_hCOM, &dwCommEvent, NULL);  
-        printf("Event : %d\n", dwCommEvent);
+    unsigned long int sizeOfMsg = 0;
 
+    while(!completMsg){
+    
+        // On attend de recevoir un event qui indiquera du changement sur le port COM.
+        WaitCommEvent(g_hCOM, &dwCommEvent, NULL);  
+        printf("Event : %d\n", i++);
+
+        // S'il y a des charactère présent sur le port COM on commence à lire.
         if(dwCommEvent == EV_RXCHAR){
-             ReadCOM(&pcMessage[sizeOfMessage], bufferLenght, &numberOfCharRead);
-             sizeOfMessage += numberOfCharRead;
-             
-             
-             //printf("%c, %c", pcMessage[sizeOfMessage-1], pcMessage[sizeOfMessage-2]);
-             
-             if(pcMessage[sizeOfMessage-1] == '}' && pcMessage[sizeOfMessage-2] == '}'){
-                 pcMessage[sizeOfMessage] = '\0';
-                 messageComplet = true;
-             }
+            // Lecture du port COM.
+            ReadCOM(&receivedMsg[sizeOfMsg], bufferLenght, &numberOfCharRead);
+             // Augmentation de la taille total du message.
+            sizeOfMsg += numberOfCharRead;
+            // Si les 2 derniers charactères sont }} le message est terminé.
+            if(receivedMsg[sizeOfMsg-1] == '}' && receivedMsg[sizeOfMsg-2] == '}'){
+
+                // Le message est complet vu qu'il se termine par }}. 
+                completMsg = true;
+                
+                // On récupère le CRC contenu dans le message reçu.
+                receivedMsgCRC = hextable[receivedMsg[sizeOfMsg-3]];
+                receivedMsgCRC |= (hextable[receivedMsg[sizeOfMsg-4]]) << 4;
+                receivedMsgCRC |= (hextable[receivedMsg[sizeOfMsg-5]]) << 8;
+                receivedMsgCRC |= (hextable[receivedMsg[sizeOfMsg-6]]) << 12;
+                
+                // Allocation de mémoire pour stocker le message mais sans le CRC.
+                uint16_t sizeOfMessageWithoutCRC = sizeOfMsg - 12;
+                receivedMsgWithoutCRC = malloc(sizeOfMessageWithoutCRC+1);
+                // Creation du nouveau message sans le CRC, +1 pour eviter de prendre la première accolade.
+                memcpy(receivedMsgWithoutCRC, receivedMsg + 1, sizeOfMessageWithoutCRC);
+                // Ajout du du \0 à la fin de la chaîne.
+                receivedMsgWithoutCRC[sizeOfMessageWithoutCRC]  = '\0';
+                
+                printf("%s\n", receivedMsgWithoutCRC);
+                printf("avant json\n");
+                if(DEBUG == 2){
+                    printf("Plantage\n");
+                }
+ 
+                JsonNode *JsonMessage = json_decode(receivedMsgWithoutCRC);
+                printf("apres json\n");
+              
+                // On calcul le CRC du message qu'on à reçu.
+                uint16_t receivedMsgCalculatedCRC = UartProcessor_calculateCrc(receivedMsgWithoutCRC);
+                
+                printf("%d = %d\n",receivedMsgCalculatedCRC,receivedMsgCRC);
+                
+                /*JsonNode *pResult = json_find_member (message, "result");
+                JsonNode *pStatus = json_find_member (pResult, "Status");*/                
+                JsonNode *pMethod = json_find_member (JsonMessage, "method");
+                if(pMethod != NULL){
+                    method = pMethod->number_;
+                    
+                    if(strcmp(method, "LinkStatus")== 0){
+                        printf("method : %s\n", method);
+                        completMsg = false;
+                        sizeOfMsg = 0;
+                    }
+                    else{
+                        printf("Reception : "); 
+                        printf("brut      : %s\n", receivedMsg);
+                        printf("Reception : ");
+                        printf("traite    : %s\n", receivedMsgWithoutCRC);
+                        
+                        printf("If method return\n");
+                        
+                        return JsonMessage;
+                    }
+                }                                       
+                else{
+                    printf("Reception : "); 
+                    printf("brut      : %s\n", receivedMsg);
+                    printf("Reception : ");
+                    printf("traiter   : %s\n", receivedMsgWithoutCRC);
+                    printf("else method return\n");
+                    return JsonMessage;
+                }
+             }// Fin du if complet.
         }
-    }
-    printf("Reception : ");
-    printf("%s\n", pcMessage);
+    }// Fin du while.
+    
+    
+    
+    
+    
+    
     
     /*WaitCommEvent(g_hCOM, &dwCommEvent, NULL);  
     printf("Event : %d\n", dwCommEvent);
@@ -270,6 +347,8 @@ unsigned short crc16(const unsigned char* data_p, unsigned char length){
     }
     return crc;
 }
+
+
 
 
 

@@ -15,6 +15,7 @@
 #include <conio.h>
 #include <stdbool.h>
 #include "SaBLExAPITypes.h"
+#include "json.h"
 
 #define TO_HEX(i) (i <= 9 ? '0' + i : 'A' -10 + i)
 
@@ -24,7 +25,7 @@ bool ReadCOM(char*, int, long unsigned int*);
 bool WriteCOM(void*, int,long unsigned int*);
 
 void UartProcessor_WriteTxMessage(char*);
-void UartProcessor_ReadTxMessage(char*, int);
+JsonNode * UartProcessor_ReadTxMessage(char*, uint16_t);
 
 unsigned short UartProcessor_crcByte(uint16_t u16fcs, uint8_t u8c);
 unsigned short UartProcessor_calculateCrc(char* pcMessage);

@@ -24,7 +24,7 @@
 #include "command.h"
 
 
-void viderBuffer()
+void cleanBuffer()
 {
     int c = 0;
     while (c != '\n' && c != EOF)
@@ -51,10 +51,12 @@ int main(int argc, char** argv) {
     do{
         printf("Choisissez un port COM auquel se connecter : ");
         scanf("%d", &portCOMId);
-    }while(openCOM(portCOMId) == false);
+    }while(fastOpenCOM(portCOMId) == false);
+    
+    openCOM(portCOMId);
     
     //sendHostAwakeOut();
-    sendSetLpmParamsOut(u8MsgId, false, 65535, true);
+   // sendSetLpmParamsOut(u8MsgId, false, 65535, true);
     
     //sendSetAdvertisingParamsOut(++u8MsgId, 7, "5361424C452D78", 160, 1, true, "5361424C452D782053657269616C2D746F2D424C45");
 
@@ -71,7 +73,7 @@ int main(int argc, char** argv) {
         printf("Quitter (Q)\n");
         printf("Choix : ");
         
-        viderBuffer();
+        cleanBuffer();
         scanf("%c", &choix);
         
         if(choix == 'G' || choix == 'g'){
