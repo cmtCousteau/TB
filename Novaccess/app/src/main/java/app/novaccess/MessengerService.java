@@ -53,6 +53,8 @@ public class MessengerService extends Service {
     static final int GET_CONNECTED_BLE_ADDRESS = 6;
     static final int READ_VALUE = 7;
     static final int WRITE_VALUE =8;
+    static final int ENABLE_NOTIFICATION = 9;
+    static final int DISABLE_NOTIFICATION = 10;
 
     static String CONNECTED_ADDRESS;
 
@@ -120,6 +122,12 @@ public class MessengerService extends Service {
                 case WRITE_VALUE:
                     String data = ((Intent)msg.obj).getStringExtra("data");
                     writeCharacteristicString(data);
+                    break;
+                case ENABLE_NOTIFICATION:
+                        enableNotification();
+                    break;
+                case DISABLE_NOTIFICATION:
+                        disableNotificiation();
                     break;
                 default:
                     super.handleMessage(msg);
@@ -282,6 +290,12 @@ public class MessengerService extends Service {
         }
 
         @Override
+        public void onCharacteristicChanged (BluetoothGatt gatt, BluetoothGattCharacteristic characteristic){
+            readCharacteristicString();
+
+        }
+
+        @Override
         public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
 
             super.onCharacteristicRead(gatt,characteristic,status);
@@ -290,26 +304,35 @@ public class MessengerService extends Service {
             Intent intent = new Intent();
             intent.setAction("CHARACTERISTIC_READ");
             intent.putExtra("value", new String(characteristic.getValue()));
-
-            sendBroadcast(intent);
-            sendBroadcast(intent);
-            sendBroadcast(intent);
+            // Envoi du message lu en broadcast.
             sendBroadcast(intent);
         }
     };
 
+    public void enableNotification(){
+        //Sorcellerie
+        UUID uuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
+        BluetoothGattDescriptor descriptor = txData.getDescriptor(uuid);
+        descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
+        mBluetoothGatt.writeDescriptor(descriptor);
+
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        mBluetoothGatt.setCharacteristicNotification(txData,true);
+        txData.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
+    }
+
+    public void disableNotificiation(){
+
+    }
+
     public void readCharacteristicString(){
 
         mBluetoothGatt.readCharacteristic(txData);
-
-
-       /* while(READ_CHARACTERISTIC_OK == false){
-            try {Thread.sleep(1);}
-            catch(Exception e){}
-        }
-        READ_CHARACTERISTIC_OK = false;*/
-
-        //return  new String(characteristic.getValue());
     }
 
     public void writeCharacteristicString(String data){

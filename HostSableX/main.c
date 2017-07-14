@@ -94,8 +94,14 @@ int main(int argc, char** argv) {
             scanf("%d", &valeurHeart);
             sendSetPeripheralLedBehaviorOut(++u8MsgId, valeurHeart, valeurHeart, true, false);
         }
-        if(menuChoice == 'E' || menuChoice == 'e')
-            sendSendOtaDataOut(++u8MsgId, "test");
+        if(menuChoice == 'E' || menuChoice == 'e'){
+            sendSendOtaDataOut(++u8MsgId, "Voltage 230 v");
+            sendSendOtaDataOut(++u8MsgId, "Courant 5 A");
+            sendSendOtaDataOut(++u8MsgId, "Cosphi 12");
+            sendSendOtaDataOut(++u8MsgId, "Frequence 200 Hz");
+            sendSendOtaDataOut(++u8MsgId, "Paggr 300 kWh");
+        }
+            
         if(menuChoice == 'R' || menuChoice == 'r'){
             readData();
         }

@@ -47,7 +47,16 @@ public class resourcesIndexMenu extends AppCompatActivity {
             mService = new Messenger(service);
             mBound = true;
 
-            Message msg = Message.obtain(null, MessengerService.READ_VALUE, 0, 0);
+            // Envoi de l'ordre pour récupérer les ressources.
+           /* Message msg = Message.obtain(null, MessengerService.READ_VALUE, 0, 0);
+            try {
+                mService.send(msg);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }*/
+
+            // Activation des notification
+            Message msg = Message.obtain(null, MessengerService.ENABLE_NOTIFICATION, 0, 0);
             try {
                 mService.send(msg);
             } catch (RemoteException e) {
@@ -55,14 +64,15 @@ public class resourcesIndexMenu extends AppCompatActivity {
             }
 
 
-            Intent intentMessage = new Intent();
+            // lecture manuel des ressources
+            /*Intent intentMessage = new Intent();
             intentMessage.putExtra("data", "salut");
             msg = Message.obtain(null, MessengerService.WRITE_VALUE, intentMessage);
             try {
                 mService.send(msg);
             } catch (RemoteException e) {
                 e.printStackTrace();
-            }
+            }*/
 
 
         }
@@ -86,7 +96,7 @@ public class resourcesIndexMenu extends AppCompatActivity {
         bindService(intent,mConnection,Context.BIND_AUTO_CREATE);
 
 
-        listResourcesName.add("Voltage :");
+      /*  listResourcesName.add("Voltage :");
         listResourcesValue.add("230v");
 
         listResourcesName.add("Courant :");
@@ -99,7 +109,7 @@ public class resourcesIndexMenu extends AppCompatActivity {
         listResourcesValue.add("200 Hz");
 
         listResourcesName.add("Puissance Aggrégée :");
-        listResourcesValue.add("300 kWh");
+        listResourcesValue.add("300 kWh");*/
 
         CustomListResources adapter = new CustomListResources(resourcesIndexMenu.this,listResourcesName,listResourcesValue);
         listResources.setAdapter(adapter);
@@ -120,12 +130,17 @@ public class resourcesIndexMenu extends AppCompatActivity {
     private final BroadcastReceiver mReadCharacteristicReiver = new BroadcastReceiver() {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            // Récupération de la chaine de charactère envoyé par le module.
             String value = intent.getStringExtra("value");
 
-            listResourcesName.add("Test :");
-            listResourcesValue.add(value);
+            // Séparateur de la chaine
+            String[] splitedString = value.split(" ");
 
-          //  Toast.makeText(getApplicationContext(), "Nombre appel : " + ++i, Toast.LENGTH_SHORT).show();
+            listResourcesName.add(splitedString[0]);
+            if(splitedString.length > 2)
+                listResourcesValue.add(splitedString[1] + splitedString[2]);
+            else
+                listResourcesValue.add(splitedString[1]);
 
             CustomListResources adapter = new CustomListResources(resourcesIndexMenu.this,listResourcesName,listResourcesValue);
             listResources.setAdapter(adapter);

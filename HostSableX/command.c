@@ -118,6 +118,7 @@ void readData(){
     
     UartProcessor_ReadTxMessage(te, 200);
     UartProcessor_ReadTxMessage(te, 200);
+    
     JsonNode *jsonMsg = UartProcessor_ReadTxMessage(te, 200);
     
     JsonNode *jsonParam = json_find_member (jsonMsg, "params");
@@ -125,8 +126,8 @@ void readData(){
       
     printf("Data : %s", jsonDataAscii->number_);
     
-    uint8_t u8MsgId = 10;
-    sendSendOtaDataOut( u8MsgId, "Blu");
+   // uint8_t u8MsgId = 10;
+   // sendSendOtaDataOut( u8MsgId, "Blu");
     
 }
 
