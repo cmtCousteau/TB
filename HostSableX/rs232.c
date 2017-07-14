@@ -3,6 +3,7 @@
 /*=============================================================================
   Variables globales.
 =============================================================================*/
+bool BLE_CONNECTED = false;
 
 /* Handle du port COM ouvert */
 HANDLE g_hCOM = NULL;
@@ -123,11 +124,9 @@ bool openCOM(int nId){
     // error setting communications mask
    }
    
-   
-   
+
       return true;
-    
-    
+   
     
 }
 
@@ -149,18 +148,19 @@ bool WriteCOM(void* buffer, int nBytesToWrite,long unsigned int* pBytesWritten)
     return WriteFile(g_hCOM, buffer, nBytesToWrite, pBytesWritten, NULL);
 }
 
+bool getBLEConnectionStatus(){
+    return BLE_CONNECTED;
+}
+
 JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght){
     
     DEBUG++;
     
     DWORD dwCommEvent = 0;
-    COMSTAT lpStat = {0};
-    DWORD error;
     BOOL completMsg = false;
     uint16_t receivedMsgCRC;
     char* method;
     char* receivedMsgWithoutCRC;
-    int i = 0;
     
     unsigned long int numberOfCharRead;
     unsigned long int sizeOfMsg = 0;
@@ -169,7 +169,6 @@ JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght)
     
         // On attend de recevoir un event qui indiquera du changement sur le port COM.
         WaitCommEvent(g_hCOM, &dwCommEvent, NULL);  
-        printf("Event : %d\n", i++);
 
         // S'il y a des charactère présent sur le port COM on commence à lire.
         if(dwCommEvent == EV_RXCHAR){
@@ -189,87 +188,60 @@ JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght)
                 receivedMsgCRC |= (hextable[receivedMsg[sizeOfMsg-5]]) << 8;
                 receivedMsgCRC |= (hextable[receivedMsg[sizeOfMsg-6]]) << 12;
                 
-                // Allocation de mémoire pour stocker le message mais sans le CRC.
+                // Allocation mémoire pour stocker le message mais sans le CRC.
                 uint16_t sizeOfMessageWithoutCRC = sizeOfMsg - 12;
                 receivedMsgWithoutCRC = malloc(sizeOfMessageWithoutCRC+1);
                 // Creation du nouveau message sans le CRC, +1 pour eviter de prendre la première accolade.
                 memcpy(receivedMsgWithoutCRC, receivedMsg + 1, sizeOfMessageWithoutCRC);
                 // Ajout du du \0 à la fin de la chaîne.
                 receivedMsgWithoutCRC[sizeOfMessageWithoutCRC]  = '\0';
-                
-                printf("%s\n", receivedMsgWithoutCRC);
-                printf("avant json\n");
-                if(DEBUG == 2){
-                    printf("Plantage\n");
-                }
- 
+
                 JsonNode *JsonMessage = json_decode(receivedMsgWithoutCRC);
-                printf("apres json\n");
               
                 // On calcul le CRC du message qu'on à reçu.
                 uint16_t receivedMsgCalculatedCRC = UartProcessor_calculateCrc(receivedMsgWithoutCRC);
-                
-                printf("%d = %d\n",receivedMsgCalculatedCRC,receivedMsgCRC);
-                
-                /*JsonNode *pResult = json_find_member (message, "result");
-                JsonNode *pStatus = json_find_member (pResult, "Status");*/                
+                             
                 JsonNode *pMethod = json_find_member (JsonMessage, "method");
                 if(pMethod != NULL){
                     method = pMethod->number_;
                     
                     if(strcmp(method, "LinkStatus")== 0){
-                        printf("method : %s\n", method);
+                        // Récupère le status de la connexion.
+                        JsonNode *jsonParam = json_find_member (JsonMessage, "params");
+                        JsonNode *jsonStatus = json_find_member (jsonParam, "Status");
+                        
+                        if(jsonStatus->number_ == 0){
+                            printf("BLE deconnecter\n");
+                            BLE_CONNECTED = false;
+                        }
+                        else{
+                            printf("BLE connecter\n");
+                            BLE_CONNECTED = true;
+                        }
                         completMsg = false;
                         sizeOfMsg = 0;
+                        free(jsonParam);
+                        free(jsonStatus);
+                        free(pMethod);
                     }
                     else{
+                        printf("-------------------------------------------\n");
                         printf("Reception : "); 
-                        printf("brut      : %s\n", receivedMsg);
-                        printf("Reception : ");
-                        printf("traite    : %s\n", receivedMsgWithoutCRC);
-                        
-                        printf("If method return\n");
-                        
+                        printf("%s\n", receivedMsgWithoutCRC);
+                        printf("-------------------------------------------\n");
                         return JsonMessage;
                     }
                 }                                       
                 else{
+                    printf("-------------------------------------------\n");
                     printf("Reception : "); 
-                    printf("brut      : %s\n", receivedMsg);
-                    printf("Reception : ");
-                    printf("traiter   : %s\n", receivedMsgWithoutCRC);
-                    printf("else method return\n");
+                    printf("%s\n", receivedMsgWithoutCRC);
+                    printf("-------------------------------------------\n");
                     return JsonMessage;
                 }
              }// Fin du if complet.
         }
     }// Fin du while.
-    
-    
-    
-    
-    
-    
-    
-    /*WaitCommEvent(g_hCOM, &dwCommEvent, NULL);  
-    printf("Event : %d\n", dwCommEvent);
-
-    if(dwCommEvent == EV_RXCHAR){
-
-        ClearCommError(g_hCOM, &error ,&lpStat); 
-        ReadCOM(pcMessage, bufferLenght, &numberOfCharRead);
-       
-        while(lpStat.cbInQue > 0){
-            
-            ReadCOM(pcMessage, bufferLenght, &numberOfCharRead);
-            WaitCommEvent(g_hCOM, &dwCommEvent, NULL);
-            
-            ReadCOM(&pcMessage[sizeOfMessage], bufferLenght, &numberOfCharRead);
-            sizeOfMessage += numberOfCharRead;
-            ClearCommError(g_hCOM, &error ,&lpStat);
-        }
-        printf("%s\n", pcMessage);
-    }*/
 }
 
 void UartProcessor_WriteTxMessage(char* pcMessage){

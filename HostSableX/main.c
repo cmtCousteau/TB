@@ -18,7 +18,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "rs232.h"
 #include "SaBLExAPI_OutgoingMsg_Peripheral.h"
 #include "SaBLExAPI_OutgoingMsg_Common.h"
 #include "command.h"
@@ -35,80 +34,76 @@ void cleanBuffer()
 
 int main(int argc, char** argv) {
     
-    char choix = "";
+    char menuChoice = "";
     int portCOMId;
     int choixDecimal = 0;
-    uint8_t u8MsgId = 1;   
+    uint8_t u8MsgId = 0;   
     
-    printf("List des ports COM disponibles : \n");
-    printf("--------------------------------\n");
-    
+    printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+    printf("| List des ports COM disponibles  |\n");
+
     for(int i = 0; i < 10; i++){
         if(fastOpenCOM(i) == true){
-            printf("Port COM : %d\n", i);
+            printf("| port COM : %d                    |\n", i);
         }
     }
+    printf("=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
     do{
         printf("Choisissez un port COM auquel se connecter : ");
         scanf("%d", &portCOMId);
     }while(fastOpenCOM(portCOMId) == false);
     
     openCOM(portCOMId);
+    sendSoftResetOut(++u8MsgId);
     
-    //sendHostAwakeOut();
-   // sendSetLpmParamsOut(u8MsgId, false, 65535, true);
-    
-    //sendSetAdvertisingParamsOut(++u8MsgId, 7, "5361424C452D78", 160, 1, true, "5361424C452D782053657269616C2D746F2D424C45");
+    // sendHostAwakeOut();
+    // sendSetLpmParamsOut(u8MsgId, false, 65535, true);
+    // sendSetAdvertisingParamsOut(++u8MsgId, 7, "5361424C452D78", 160, 1, true, "5361424C452D782053657269616C2D746F2D424C45");
 
-    //HANDLE thread = CreateThread(NULL, 0, thread_1, NULL, 0, NULL);
-    
     do{
-        printf("------------------------------------\n");
-        printf("Configuration des advertising (G)\n");
-        printf("Activation des advertising (A)\n");
-        printf("Desactivation des advertising (D)\n");
-        printf("Choix du heartbeat (B)\n");
-        printf("Envoyer des data (E)\n");
-        printf("Reception des data (R)\n");
-        printf("Quitter (Q)\n");
-        printf("Choix : ");
+        printf(" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
+        printf("| Configuration des advertising (G)  |\n");
+        printf("| Activation des advertising (A)     |\n");
+        printf("| Desactivation des advertising (D)  |\n");
+        printf("| Choix du heartbeat (B)             |\n");
+        printf("| Envoyer des data (E)               |\n");
+        printf("| Reception des data (R)             |\n");
+        printf("| Quitter (Q)                        |\n");
+        printf("| Choix : ");
         
         cleanBuffer();
-        scanf("%c", &choix);
+        scanf("%c", &menuChoice);
+        printf(" =-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=\n");
         
-        if(choix == 'G' || choix == 'g'){
+        if(menuChoice == 'G' || menuChoice == 'g'){
         
             printf("Choix de l'interval d'avertising : ");
             scanf("%d", &choixDecimal);            
             sendSetAdvertisingParamsOut(++u8MsgId, 7, "5361424C452D78", choixDecimal, 1, true, "5361424C452D782053657269616C2D746F2D424C45");
         }
         
-        if(choix == 'A' || choix == 'a'){
-            //SuspendThread(thread);
+        if(menuChoice == 'A' || menuChoice == 'a'){
             sendSetAdvertisingEnableOut(++u8MsgId,true,true);
         }
             
-        if(choix == 'D' || choix == 'd')
+        if(menuChoice == 'D' || menuChoice == 'd')
             sendSetAdvertisingEnableOut(++u8MsgId,false,true);
-        if(choix == 'B' || choix == 'b'){
+        if(menuChoice == 'B' || menuChoice == 'b'){
             int valeurHeart;
             printf("Valeur du hearbeat : ");
             scanf("%d", &valeurHeart);
             sendSetPeripheralLedBehaviorOut(++u8MsgId, valeurHeart, valeurHeart, true, false);
         }
-        if(choix == 'E' || choix == 'e')
+        if(menuChoice == 'E' || menuChoice == 'e')
             sendSendOtaDataOut(++u8MsgId, "test");
-        if(choix == 'R' || choix == 'r'){
+        if(menuChoice == 'R' || menuChoice == 'r'){
             readData();
         }
         
             
-    }while(choix != 'Q' && choix != 'q');
+    }while(menuChoice != 'Q' && menuChoice != 'q');
 
-    
     CloseCOM();
-
-
     return (EXIT_SUCCESS);
 }
 

@@ -40,16 +40,8 @@
 /*********************************************************************
 * INCLUDES
 */
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "json.h"
-#include "SaBLExAPI_Shared.h"
-#include "SaBLExAPI_OutgoingMsg_Common.h"
-#include "rs232.h"
 
+#include "SaBLExAPI_OutgoingMsg_Common.h"
 
 /*********************************************************************
 * GLOBAL VARIABLES
@@ -531,7 +523,7 @@ void SoftResetOut (uint8_t u8MsgId)
 
 	/* # App Code Start # */
 	/* Send pTemp out UART */
-
+        UartProcessor_WriteTxMessage(pTemp);
 	/* # App Code End # */
 
 	/* Clean Up Memory */

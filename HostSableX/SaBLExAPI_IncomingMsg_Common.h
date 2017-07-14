@@ -48,6 +48,7 @@ extern "C" {
 */
 #include "SaBLExAPITypes.h"
 #include "json.h"
+#include "SaBLExAPI_Shared.h"
 
 
 /*********************************************************************

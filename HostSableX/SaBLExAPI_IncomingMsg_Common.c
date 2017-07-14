@@ -40,17 +40,8 @@
 /*********************************************************************
 * INCLUDES
 */
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "json.h"
-#include "SaBLExAPITypes.h"
-#include "SaBLExAPI_Shared.h"
+
 #include "SaBLExAPI_IncomingMsg_Common.h"
-#include "SaBLExAPI_OutgoingMsg_Common.h"
-#include "SaBLExAPI_OutgoingMsg_Common.h"
 
 
 /*********************************************************************

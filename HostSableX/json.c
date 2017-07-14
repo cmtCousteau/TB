@@ -357,9 +357,7 @@ static bool tag_is_valid(unsigned int tag);
 static bool number_is_valid(const char *num);
 
 JsonNode *json_decode(const char *json)
-{
-         printf("Message traiter : %s\n", json);
-         
+{    
 	const char *s = json;
 	JsonNode *ret;
 	

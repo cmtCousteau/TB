@@ -46,8 +46,9 @@ extern "C" {
 /*********************************************************************
 * INCLUDES
 */
-#include "SaBLExAPITypes.h"
 #include "json.h"
+#include "SaBLExAPITypes.h"
+#include "SaBLExAPI_Shared.h"
 
 
 /*********************************************************************

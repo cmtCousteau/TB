@@ -40,18 +40,7 @@
 /*********************************************************************
 * INCLUDES
 */
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "json.h"
-#include "SaBLExAPITypes.h"
-#include "SaBLExAPI_Shared.h"
 #include "SaBLExAPI_IncomingMsg_Peripheral.h"
-#include "SaBLExAPI_OutgoingMsg_Peripheral.h"
-#include "SaBLExAPI_OutgoingMsg_Common.h"
-
 
 /*********************************************************************
 * GLOBAL VARIABLES

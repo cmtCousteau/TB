@@ -27,11 +27,13 @@ bool sendSendOtaDataOut (uint8_t u8MsgId, char* data){
     
     SendOtaDataOut(u8MsgId, &params_SendOtaDataOut);
     
-    char te[200];
-    char msg2[200];
-    UartProcessor_ReadTxMessage(te, 200);
-    printf("-----------------\n");
-    UartProcessor_ReadTxMessage(msg2, 200);
+    char msgStatus[200];
+    char msgACK[200];
+    
+    UartProcessor_ReadTxMessage(msgStatus, 200);
+    if(getBLEConnectionStatus())
+        UartProcessor_ReadTxMessage(msgACK, 200);
+    
 }
 
 bool sendSetAdvertisingParamsOut ( uint8_t u8MsgId, uint8_t advertisingChannels,
@@ -61,9 +63,25 @@ bool sendSetAdvertisingEnableOut(uint8_t u8MsgId, bool advertisingEnable, bool s
     SetAdvertisingEnableOut (u8MsgId, &params_SetAdvertisingEnableOut);
     char msg[200];
     JsonNode *jsonMsg = UartProcessor_ReadTxMessage(msg, 200);
+    
+    JsonNode *jsonResult = json_find_member (jsonMsg, "result");
+    JsonNode *jsonStatus = json_find_member (jsonResult, "Status");
+    free(jsonMsg);
+    free(jsonResult);
+    
+    if(jsonStatus->number_ == 0){
+        free(jsonStatus);
+        printf("OK\n");
+        return true;
+    }else{
+        free(jsonStatus);
+        printf("KO\n");
+        return false;
+    }
+    
   //  printf("%s\n", msg);
 //    SetAdvertisingEnableIn(pMsg);
-    
+        
     
 }
 
@@ -82,7 +100,15 @@ bool sendSetLpmParamsOut(uint8_t u8MsgId, bool wakeHost, uint16_t sleepTime, boo
     SetLpmParamsOut(u8MsgId, &params_SetLpmParamsOut);
     char te[200];
     UartProcessor_ReadTxMessage(te, 200);
-     
+         
+}
+
+void sendSoftResetOut (uint8_t u8MsgId){
+    
+    SoftResetOut(u8MsgId);
+    char te[200];
+    UartProcessor_ReadTxMessage(te, 200);
+    UartProcessor_ReadTxMessage(te, 200);
 }
 
 void readData(){
@@ -104,16 +130,5 @@ void readData(){
     
 }
 
-DWORD WINAPI thread_1(void *arg)
-{
-    int bufferLenght = 200;
-    char pcMessage[200];
-    
-    while(1){
-        printf("thread\n");
-        char te[200];
-        UartProcessor_ReadTxMessage(te, 200);
-    }
-}
 
 
