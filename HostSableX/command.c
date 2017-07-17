@@ -1,7 +1,7 @@
 #include "command.h"
 
 
-bool sendSetPeripheralLedBehaviorOut(uint8_t u8MsgId, int AdvertisingPeriod, int HeartbeatPeriod, bool UartActivity, bool SaveToNv){
+bool sendSetPeripheralLedBehaviorOut(uint8_t u8MsgId, uint16_t AdvertisingPeriod, uint16_t HeartbeatPeriod, bool UartActivity, bool SaveToNv){
 
     params_SetPeripheralLedBehaviorOut_t paramLed;
     JsonNode pMsg;
@@ -13,9 +13,8 @@ bool sendSetPeripheralLedBehaviorOut(uint8_t u8MsgId, int AdvertisingPeriod, int
     
     SetPeripheralLedBehaviorOut(u8MsgId, &paramLed);
     
-   // &pMsg = json_mkstring(te);
-    
-   // SetPeripheralLedBehaviorIn (pMsg);
+    char msg[200];
+    JsonNode *jsonMsg = UartProcessor_ReadTxMessage(msg, 200);
     
 }
 
@@ -111,9 +110,24 @@ void sendSoftResetOut (uint8_t u8MsgId){
     UartProcessor_ReadTxMessage(te, 200);
 }
 
+void sendSetConnectionParamsOut (uint8_t u8MsgId, uint16_t maxConInterval, uint16_t minConInterval, bool saveToNv, uint16_t slaveLatency, uint16_t supervisionTimeout){
+
+    params_SetConnectionParamsOut_t params_SetConnectionParamsOut;
+    
+    params_SetConnectionParamsOut.MaxConnectionInterval = maxConInterval;
+    params_SetConnectionParamsOut.MinConnectionInterval = minConInterval;
+    params_SetConnectionParamsOut.SaveToNv = saveToNv;
+    params_SetConnectionParamsOut.SlaveLatency = slaveLatency;
+    params_SetConnectionParamsOut.SupervisionTimeout = supervisionTimeout;
+    
+    SetConnectionParamsOut(u8MsgId, &params_SetConnectionParamsOut);
+    
+    char te[200];
+    UartProcessor_ReadTxMessage(te, 200);
+}
+
 void readData(){
     char te[200];
-    
     
     
     UartProcessor_ReadTxMessage(te, 200);

@@ -10,15 +10,7 @@ HANDLE g_hCOM = NULL;
 
 int DEBUG = 0;
 
-/* Délais d'attente sur le port COM */
-COMMTIMEOUTS g_cto =
-{
-    MAX_WAIT_READ,  /* ReadIntervalTimeOut          */
-    0,              /* ReadTotalTimeOutMultiplier   */
-    MAX_WAIT_READ,  /* ReadTotalTimeOutConstant     */
-    0,              /* WriteTotalTimeOutMultiplier  */
-    0               /* WriteTotalTimeOutConstant    */
-};
+
 
 static const uint16_t crcTable[256]  =
 {
@@ -144,7 +136,6 @@ bool ReadCOM(char* buffer, int nBytesToRead, long unsigned int* pBytesRead)
 
 bool WriteCOM(void* buffer, int nBytesToWrite,long unsigned int* pBytesWritten)
 {
-    /* écriture sur le port */
     return WriteFile(g_hCOM, buffer, nBytesToWrite, pBytesWritten, NULL);
 }
 
@@ -167,14 +158,14 @@ JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght)
 
     while(!completMsg){
     
-        // On attend de recevoir un event qui indiquera du changement sur le port COM.
+        // On attend de recevoir un event qui indiquera un changement sur le port COM.
         WaitCommEvent(g_hCOM, &dwCommEvent, NULL);  
 
-        // S'il y a des charactère présent sur le port COM on commence à lire.
+        // S'il y a des charactère présents sur le port COM on commence à lire.
         if(dwCommEvent == EV_RXCHAR){
             // Lecture du port COM.
             ReadCOM(&receivedMsg[sizeOfMsg], bufferLenght, &numberOfCharRead);
-             // Augmentation de la taille total du message.
+            // Augmentation de la taille total du message.
             sizeOfMsg += numberOfCharRead;
             // Si les 2 derniers charactères sont }} le message est terminé.
             if(receivedMsg[sizeOfMsg-1] == '}' && receivedMsg[sizeOfMsg-2] == '}'){
@@ -190,21 +181,26 @@ JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght)
                 
                 // Allocation mémoire pour stocker le message mais sans le CRC.
                 uint16_t sizeOfMessageWithoutCRC = sizeOfMsg - 12;
-                receivedMsgWithoutCRC = malloc(sizeOfMessageWithoutCRC+1);
+                // +1 pour le /0 qui sera ajouté
+                receivedMsgWithoutCRC = malloc(sizeOfMessageWithoutCRC + 1);
                 // Creation du nouveau message sans le CRC, +1 pour eviter de prendre la première accolade.
                 memcpy(receivedMsgWithoutCRC, receivedMsg + 1, sizeOfMessageWithoutCRC);
                 // Ajout du du \0 à la fin de la chaîne.
                 receivedMsgWithoutCRC[sizeOfMessageWithoutCRC]  = '\0';
 
+                // Transforme le message reçu au format JSON.
                 JsonNode *JsonMessage = json_decode(receivedMsgWithoutCRC);
               
                 // On calcul le CRC du message qu'on à reçu.
                 uint16_t receivedMsgCalculatedCRC = UartProcessor_calculateCrc(receivedMsgWithoutCRC);
-                             
+                
+                // Essaye de trouvé un noeud "method" dans le message JSON.
                 JsonNode *pMethod = json_find_member (JsonMessage, "method");
                 if(pMethod != NULL){
                     method = pMethod->number_;
                     
+                    // Traite de le cas du message reçu lors de la connexion/déconnexion
+                    // du téléphone via BLE.
                     if(strcmp(method, "LinkStatus")== 0){
                         // Récupère le status de la connexion.
                         JsonNode *jsonParam = json_find_member (JsonMessage, "params");
@@ -244,45 +240,48 @@ JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght)
     }// Fin du while.
 }
 
-void UartProcessor_WriteTxMessage(char* pcMessage){
+void UartProcessor_WriteTxMessage(char* jsonMsg){
     
 
-    uint16_t u16crc = UartProcessor_calculateCrc(pcMessage);
+    
     bool test;
     unsigned long int written;
-
     int status = -1;
+    char crc[4];
     
-    char res[4];
-    res[0] = TO_HEX(((u16crc & 0xF000) >> 12));   
-    res[1] = TO_HEX(((u16crc & 0x0F00) >> 8));
-    res[2] = TO_HEX(((u16crc & 0x00F0) >> 4));
-    res[3] = TO_HEX((u16crc & 0x000F));
+    // Calcul du CRC et séparation de chaque charactère.
+    uint16_t u16crc = UartProcessor_calculateCrc(jsonMsg);
+    crc[0] = TO_HEX(((u16crc & 0xF000) >> 12));   
+    crc[1] = TO_HEX(((u16crc & 0x0F00) >> 8));
+    crc[2] = TO_HEX(((u16crc & 0x00F0) >> 4));
+    crc[3] = TO_HEX((u16crc & 0x000F));
 
-    
-    uint16_t u16MsgSize = strlen(pcMessage) + 13;
-    char* pcMsg = malloc(u16MsgSize);
+    // + 12 pour l'ajout du CRC au format JSON et + 1 pour le /0 ajouté
+    // à la fin.
+    uint16_t msgLength = strlen(jsonMsg) + 13;
+    char* jsonMsgToSend = malloc(msgLength);
     //copy pcBuffer into pcMsg prior to bracketizing
-    memcpy(pcMsg+1, pcMessage, strlen(pcMessage));
+    memcpy(jsonMsgToSend+1, jsonMsg, strlen(jsonMsg));
     
-    //bracketize and add crc
-    pcMsg[0] = '{';
-    pcMsg[u16MsgSize-2] = '}';
-    pcMsg[u16MsgSize-3] = '}';
-    pcMsg[u16MsgSize-4] = res[3];
-    pcMsg[u16MsgSize-5] = res[2];
-    pcMsg[u16MsgSize-6] = res[1];
-    pcMsg[u16MsgSize-7] = res[0];
-    pcMsg[u16MsgSize-8] = ':';
-    pcMsg[u16MsgSize-9] = 'C';
-    pcMsg[u16MsgSize-10] = 'R';
-    pcMsg[u16MsgSize-11] = 'C';
-    pcMsg[u16MsgSize-12] = '{';
-    pcMsg[u16MsgSize-1] = '\0';
+    // On ajoute le CRC en fin de chaîne au format JSON.
+    // Le /0 n'est pas nécessaire mais utile à des fin d'affichage.
+    jsonMsgToSend[0] = '{';
+    jsonMsgToSend[msgLength-2] = '}';
+    jsonMsgToSend[msgLength-3] = '}';
+    jsonMsgToSend[msgLength-4] = crc[3];
+    jsonMsgToSend[msgLength-5] = crc[2];
+    jsonMsgToSend[msgLength-6] = crc[1];
+    jsonMsgToSend[msgLength-7] = crc[0];
+    jsonMsgToSend[msgLength-8] = ':';
+    jsonMsgToSend[msgLength-9] = 'C';
+    jsonMsgToSend[msgLength-10] = 'R';
+    jsonMsgToSend[msgLength-11] = 'C';
+    jsonMsgToSend[msgLength-12] = '{';
+    jsonMsgToSend[msgLength-1] = '\0';
 
-    printf("Envoi : %s\n",pcMsg); 
-    WriteCOM(pcMsg, u16MsgSize, &written);
-    free(pcMsg);  
+    printf("Envoi : %s\n",jsonMsgToSend); 
+    WriteCOM(jsonMsgToSend, msgLength, &written);
+    free(jsonMsgToSend);  
 }
 
 uint16_t UartProcessor_crcByte(uint16_t u16fcs, uint8_t u8c)
@@ -304,20 +303,6 @@ uint16_t UartProcessor_calculateCrc(char* pcMessage)
     }
     
     return fcs;
-}
-
-unsigned short crc16(const unsigned char* data_p, unsigned char length){
-    unsigned char x;
-    unsigned short crc = 0xFFFF;
-    
-   // printf("\n\n %s\n", data_p);
-
-    while (length--){
-        x = crc >> 8 ^ *data_p++;
-        x ^= x>>4;
-        crc = (crc << 8) ^ ((unsigned short)(x << 12)) ^ ((unsigned short)(x <<5)) ^ ((unsigned short)x);
-    }
-    return crc;
 }
 
 

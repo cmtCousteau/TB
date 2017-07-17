@@ -594,7 +594,7 @@ void SetConnectionParamsOut (uint8_t u8MsgId, params_SetConnectionParamsOut_t* p
 
 	/* # App Code Start # */
 	/* Send pTemp out UART */
-
+        UartProcessor_WriteTxMessage(pTemp);
 	/* # App Code End # */
 
 	/* Clean Up Memory */
@@ -624,9 +624,9 @@ void TerminateBleConnectionOut (uint8_t u8MsgId)
 
 	/* # App Code Start # */
 	/* Send pTemp out UART */
-
+        UartProcessor_WriteTxMessage(pTemp);
 	/* # App Code End # */
-
+        
 	/* Clean Up Memory */
 	json_delete(pMsg);
 	free(pTemp);

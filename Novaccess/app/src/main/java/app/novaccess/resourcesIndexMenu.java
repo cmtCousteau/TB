@@ -92,31 +92,19 @@ public class resourcesIndexMenu extends AppCompatActivity {
 
         listResources = (ListView) findViewById(R.id.listResources);
 
-        Intent intent = new Intent(this, MessengerService.class);
-        bindService(intent,mConnection,Context.BIND_AUTO_CREATE);
-
-
-      /*  listResourcesName.add("Voltage :");
-        listResourcesValue.add("230v");
-
-        listResourcesName.add("Courant :");
-        listResourcesValue.add("5A");
-
-        listResourcesName.add("Cosphi :");
-        listResourcesValue.add("12");
-
-        listResourcesName.add("Fréquence :");
-        listResourcesValue.add("200 Hz");
-
-        listResourcesName.add("Puissance Aggrégée :");
-        listResourcesValue.add("300 kWh");*/
-
         CustomListResources adapter = new CustomListResources(resourcesIndexMenu.this,listResourcesName,listResourcesValue);
         listResources.setAdapter(adapter);
+    }
+
+    @Override
+    protected  void onResume(){
+        super.onResume();
 
         IntentFilter filter = new IntentFilter("CHARACTERISTIC_READ");
         registerReceiver(mReadCharacteristicReiver, filter);
 
+        Intent intent = new Intent(this, MessengerService.class);
+        bindService(intent,mConnection,Context.BIND_AUTO_CREATE);
     }
 
     @Override

@@ -79,6 +79,19 @@ public class mainMenu extends AppCompatActivity {
         unbindService(mConnection);
     }
 
+    @Override
+    public void onBackPressed() {
+
+        Message msg = Message.obtain(null, MessengerService.BLE_DISCONNECT, 0, 0);
+        try {
+            mService.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        super.onBackPressed();
+    }
+
 
     private  View.OnClickListener btnResourcesIndexClick = new View.OnClickListener(){
 
@@ -103,7 +116,6 @@ public class mainMenu extends AppCompatActivity {
             } catch (RemoteException e) {
                 e.printStackTrace();
             }
-
 
             Intent IntentStartMenuIntent = new Intent(getContext(), StartMenu.class);
             startActivity(IntentStartMenuIntent);

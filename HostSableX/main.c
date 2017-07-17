@@ -21,6 +21,7 @@
 #include "SaBLExAPI_OutgoingMsg_Peripheral.h"
 #include "SaBLExAPI_OutgoingMsg_Common.h"
 #include "command.h"
+#include <inttypes.h>
 
 
 void cleanBuffer()
@@ -66,6 +67,7 @@ int main(int argc, char** argv) {
         printf("| Activation des advertising (A)     |\n");
         printf("| Desactivation des advertising (D)  |\n");
         printf("| Choix du heartbeat (B)             |\n");
+        printf("| Configuration des intervals (P)    |\n");
         printf("| Envoyer des data (E)               |\n");
         printf("| Reception des data (R)             |\n");
         printf("| Quitter (Q)                        |\n");
@@ -89,10 +91,11 @@ int main(int argc, char** argv) {
         if(menuChoice == 'D' || menuChoice == 'd')
             sendSetAdvertisingEnableOut(++u8MsgId,false,true);
         if(menuChoice == 'B' || menuChoice == 'b'){
-            int valeurHeart;
-            printf("Valeur du hearbeat : ");
-            scanf("%d", &valeurHeart);
-            sendSetPeripheralLedBehaviorOut(++u8MsgId, valeurHeart, valeurHeart, true, false);
+            uint16_t periodeValue;
+            printf("Valeur du hearbeat ms [0-65535]: ");
+            scanf("%" SCNu16, &periodeValue);
+            
+            sendSetPeripheralLedBehaviorOut(++u8MsgId, periodeValue, periodeValue, true, false);
         }
         if(menuChoice == 'E' || menuChoice == 'e'){
             sendSendOtaDataOut(++u8MsgId, "Voltage 230 v");
@@ -104,6 +107,26 @@ int main(int argc, char** argv) {
             
         if(menuChoice == 'R' || menuChoice == 'r'){
             readData();
+        }
+        
+        if(menuChoice == 'P' || menuChoice == 'p'){
+            
+            uint16_t maxConInterval = 0;
+            uint16_t minConInterval = 0;
+           
+            do{
+                printf("Maximum interval ms [6-3200] : ");
+                cleanBuffer();
+                scanf("%" SCNu16, &maxConInterval);
+            }while(maxConInterval < 6 || maxConInterval > 3200);
+            
+            do{
+                printf("Minimum interval ms [6-3200] : ");
+                cleanBuffer();
+                scanf("%" SCNu16, &minConInterval);
+            }while(minConInterval < 6 || minConInterval > 3200);
+            
+            sendSetConnectionParamsOut(++u8MsgId, maxConInterval, minConInterval, true, 0,1000);
         }
         
             

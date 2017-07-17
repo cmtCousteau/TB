@@ -29,15 +29,10 @@ JsonNode * UartProcessor_ReadTxMessage(char*, uint16_t);
 
 unsigned short UartProcessor_crcByte(uint16_t u16fcs, uint8_t u8c);
 unsigned short UartProcessor_calculateCrc(char* pcMessage);
-unsigned short crc16(const unsigned char* data_p, unsigned char length);
-
 
 /*=============================================================================
   Définition de constantes
 =============================================================================*/
-#define RX_SIZE         4096    /* taille tampon d'entrée  */
-#define TX_SIZE         2048    /* taille tampon de sortie */
-#define MAX_WAIT_READ   5000    /* temps max d'attente pour lecture (en ms) */
 
 
 #define	RS232_H

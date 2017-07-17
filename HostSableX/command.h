@@ -25,15 +25,15 @@
 extern "C" {
 #endif
 
-    bool sendSetPeripheralLedBehaviorOut(uint8_t u8MsgId, int AdvertisingPeriod, int HeartbeatPeriod, bool UartActivity, bool SaveToNv);
+    bool sendSetPeripheralLedBehaviorOut(uint8_t u8MsgId, uint16_t AdvertisingPeriod, uint16_t HeartbeatPeriod, bool UartActivity, bool SaveToNv);
     bool sendSendOtaDataOut (uint8_t u8MsgId, char* data);
-    bool sendSetAdvertisingParamsOut ( uint8_t u8MsgId, uint8_t advertisingChannels,
-        char* advertisingData, uint16_t advertisingInterval,
-        uint8_t discoverableMode, bool saveToNv, char* scanResponseData);
+    bool sendSetAdvertisingParamsOut ( uint8_t u8MsgId, uint8_t advertisingChannels, char* advertisingData, uint16_t advertisingInterval,
+    uint8_t discoverableMode, bool saveToNv, char* scanResponseData);
     bool sendSetAdvertisingEnableOut(uint8_t u8MsgId, bool advertisingEnable, bool saveToNv);
     bool sendHostAwakeOut();
     bool sendSetLpmParamsOut(uint8_t, bool, uint16_t, bool);
     void sendSoftResetOut (uint8_t);
+    void sendSetConnectionParamsOut (uint8_t, uint16_t, uint16_t, bool, uint16_t, uint16_t);
     void readData();
     
     void startReadThread();

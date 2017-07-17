@@ -11,12 +11,8 @@ import android.bluetooth.BluetoothGattService;
 import android.bluetooth.BluetoothManager;
 import android.bluetooth.BluetoothProfile;
 import android.bluetooth.le.BluetoothLeScanner;
-import android.bluetooth.le.ScanCallback;
-import android.bluetooth.le.ScanResult;
-import android.bluetooth.le.ScanSettings;
 import android.content.Context;
 import android.content.Intent;
-import android.media.audiofx.AudioEffect;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -27,8 +23,6 @@ import android.widget.Toast;
 import java.util.UUID;
 
 import java.util.List;
-import java.util.UUID;
-import java.util.List;
 
 import static android.bluetooth.BluetoothAdapter.STATE_CONNECTED;
 import static android.bluetooth.BluetoothAdapter.STATE_CONNECTING;
@@ -36,8 +30,6 @@ import static android.bluetooth.BluetoothGattCharacteristic.PERMISSION_READ;
 import static android.bluetooth.BluetoothGattCharacteristic.PROPERTY_READ;
 import static android.bluetooth.BluetoothProfile.STATE_DISCONNECTED;
 import static android.content.ContentValues.TAG;
-import static app.novaccess.BluetoothLeService.ACTION_GATT_CONNECTED;
-import static app.novaccess.BluetoothLeService.ACTION_GATT_DISCONNECTED;
 
 /**
  * Created by marco on 29.06.2017.
@@ -57,6 +49,8 @@ public class MessengerService extends Service {
     static final int DISABLE_NOTIFICATION = 10;
 
     static String CONNECTED_ADDRESS;
+
+    static int CPT = 0;
 
 
     private final String txDataUUID   = "3347AB01-FB94-11E2-A8E4-F23C91AEC05E"; // peripheral  => central
@@ -206,6 +200,9 @@ public class MessengerService extends Service {
             return false;
         }
 
+        if(mConnectionState != STATE_CONNECTED)
+            this.disconnect();
+
         mBluetoothGatt = device.connectGatt(this, false, mGattCallback);
         Log.d(TAG, "Trying to create a new connection.");
         mConnectionState = STATE_CONNECTING;
@@ -300,6 +297,7 @@ public class MessengerService extends Service {
 
             super.onCharacteristicRead(gatt,characteristic,status);
             //READ_CHARACTERISTIC_OK = true;
+            sendACKTx();
 
             Intent intent = new Intent();
             intent.setAction("CHARACTERISTIC_READ");
@@ -310,17 +308,11 @@ public class MessengerService extends Service {
     };
 
     public void enableNotification(){
-        //Sorcellerie
+
         UUID uuid = UUID.fromString("00002902-0000-1000-8000-00805f9b34fb");
         BluetoothGattDescriptor descriptor = txData.getDescriptor(uuid);
         descriptor.setValue(BluetoothGattDescriptor.ENABLE_NOTIFICATION_VALUE);
         mBluetoothGatt.writeDescriptor(descriptor);
-
-        try {
-            Thread.sleep(200);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
 
         mBluetoothGatt.setCharacteristicNotification(txData,true);
         txData.setWriteType(BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT);
@@ -333,6 +325,16 @@ public class MessengerService extends Service {
     public void readCharacteristicString(){
 
         mBluetoothGatt.readCharacteristic(txData);
+    }
+
+    public void sendACKTx(){
+        txRead.setValue(new byte[]{0x01});
+
+        while(mBluetoothGatt.writeCharacteristic(txRead)!= true){
+            try {Thread.sleep(1);}
+            catch(Exception e){}
+        }
+
     }
 
     public void writeCharacteristicString(String data){
