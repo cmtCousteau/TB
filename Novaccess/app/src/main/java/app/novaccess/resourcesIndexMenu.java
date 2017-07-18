@@ -63,16 +63,14 @@ public class resourcesIndexMenu extends AppCompatActivity {
                 e.printStackTrace();
             }
 
-
-            // lecture manuel des ressources
-            /*Intent intentMessage = new Intent();
-            intentMessage.putExtra("data", "salut");
+            Intent intentMessage = new Intent();
+            intentMessage.putExtra("data", "GetResources");
             msg = Message.obtain(null, MessengerService.WRITE_VALUE, intentMessage);
             try {
                 mService.send(msg);
             } catch (RemoteException e) {
                 e.printStackTrace();
-            }*/
+            }
 
 
         }

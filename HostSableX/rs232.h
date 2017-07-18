@@ -8,6 +8,9 @@
 
 #ifndef RS232_H
 
+#ifdef	__cplusplus
+extern "C" {
+#endif
 
 #include <windows.h>
 #include <stdio.h>
@@ -15,6 +18,12 @@
 #include "json.h"
 
 #define TO_HEX(i) (i <= 9 ? '0' + i : 'A' -10 + i)
+
+
+
+#define	RS232_H
+
+
 
 bool openCOM(int);
 bool fastOpenCOM(int);
@@ -29,19 +38,6 @@ JsonNode * UartProcessor_ReadTxMessage(char*, uint16_t);
 
 unsigned short UartProcessor_crcByte(uint16_t u16fcs, uint8_t u8c);
 unsigned short UartProcessor_calculateCrc(char* pcMessage);
-
-/*=============================================================================
-  Définition de constantes
-=============================================================================*/
-
-
-#define	RS232_H
-
-#ifdef	__cplusplus
-extern "C" {
-#endif
-
-
 
 
 #ifdef	__cplusplus

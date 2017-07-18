@@ -197,7 +197,7 @@ JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght)
                 // Essaye de trouvé un noeud "method" dans le message JSON.
                 JsonNode *pMethod = json_find_member (JsonMessage, "method");
                 if(pMethod != NULL){
-                    method = pMethod->number_;
+                    method = (char * )pMethod->number_;
                     
                     // Traite de le cas du message reçu lors de la connexion/déconnexion
                     // du téléphone via BLE.

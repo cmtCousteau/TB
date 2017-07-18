@@ -14,6 +14,10 @@
 #ifndef COMMAND_H
 #define COMMAND_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "rs232.h"
@@ -21,9 +25,7 @@
 #include "SaBLExAPI_OutgoingMsg_Peripheral.h"
 #include "SaBLExAPI_OutgoingMsg_Common.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+
 
     bool sendSetPeripheralLedBehaviorOut(uint8_t u8MsgId, uint16_t AdvertisingPeriod, uint16_t HeartbeatPeriod, bool UartActivity, bool SaveToNv);
     bool sendSendOtaDataOut (uint8_t u8MsgId, char* data);
@@ -34,9 +36,11 @@ extern "C" {
     bool sendSetLpmParamsOut(uint8_t, bool, uint16_t, bool);
     void sendSoftResetOut (uint8_t);
     void sendSetConnectionParamsOut (uint8_t, uint16_t, uint16_t, bool, uint16_t, uint16_t);
-    void readData();
+    uint16_t waitForCommand();
     
     void startReadThread();
+    
+#define GET_RESOURCES 1
     
     
 

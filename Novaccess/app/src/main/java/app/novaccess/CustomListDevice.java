@@ -18,7 +18,7 @@ public class CustomListDevice extends ArrayAdapter<String> {
 
     private final Activity context;
     private final List<String> deviceNameList;
-    private final  List<Integer> deviceRssi;
+    private final List<Integer> deviceRssi;
     private final List<String> deviceAddressList;
 
     public CustomListDevice(Activity context, List<String> deviceNameList, List<Integer> rssiList, List<String> addressList) {
@@ -36,11 +36,13 @@ public class CustomListDevice extends ArrayAdapter<String> {
         LayoutInflater inflater = context.getLayoutInflater();
         View rowView = inflater.inflate(R.layout.list_item_devices, null, true);
 
+        // Réupère les différents TextView présents dans la vue.
         TextView deviceName = (TextView) rowView.findViewById(R.id.deviceName);
         TextView deviceAddress = (TextView) rowView.findViewById(R.id.deviceAddress);
         ProgressBar receptionPower = (ProgressBar) rowView.findViewById(R.id.rssi);
 
-        deviceName.setText(deviceNameList.get(position));
+        // Ajoute le texte aux différents TextView.
+        deviceName.setText("s/n : " + deviceNameList.get(position));
         deviceAddress.setText(deviceAddressList.get(position));
         receptionPower.setProgress(deviceRssi.get(position));
 

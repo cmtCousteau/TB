@@ -35,7 +35,7 @@ void cleanBuffer()
 
 int main(int argc, char** argv) {
     
-    char menuChoice = "";
+    char menuChoice = '\0';
     int portCOMId;
     int choixDecimal = 0;
     uint8_t u8MsgId = 0;   
@@ -68,8 +68,7 @@ int main(int argc, char** argv) {
         printf("| Desactivation des advertising (D)  |\n");
         printf("| Choix du heartbeat (B)             |\n");
         printf("| Configuration des intervals (P)    |\n");
-        printf("| Envoyer des data (E)               |\n");
-        printf("| Reception des data (R)             |\n");
+        printf("| Attends commande (R)               |\n");
         printf("| Quitter (Q)                        |\n");
         printf("| Choix : ");
         
@@ -97,17 +96,6 @@ int main(int argc, char** argv) {
             
             sendSetPeripheralLedBehaviorOut(++u8MsgId, periodeValue, periodeValue, true, false);
         }
-        if(menuChoice == 'E' || menuChoice == 'e'){
-            sendSendOtaDataOut(++u8MsgId, "Voltage 230 v");
-            sendSendOtaDataOut(++u8MsgId, "Courant 5 A");
-            sendSendOtaDataOut(++u8MsgId, "Cosphi 12");
-            sendSendOtaDataOut(++u8MsgId, "Frequence 200 Hz");
-            sendSendOtaDataOut(++u8MsgId, "Paggr 300 kWh");
-        }
-            
-        if(menuChoice == 'R' || menuChoice == 'r'){
-            readData();
-        }
         
         if(menuChoice == 'P' || menuChoice == 'p'){
             
@@ -128,8 +116,17 @@ int main(int argc, char** argv) {
             
             sendSetConnectionParamsOut(++u8MsgId, maxConInterval, minConInterval, true, 0,1000);
         }
-        
-            
+        if(menuChoice == 'R' || menuChoice == 'r'){
+            uint16_t command = waitForCommand();
+            if(command == GET_RESOURCES){
+                sendSendOtaDataOut(++u8MsgId, "Voltage 230 v");
+                sendSendOtaDataOut(++u8MsgId, "Courant 5 A");
+                sendSendOtaDataOut(++u8MsgId, "Cosphi 12");
+                sendSendOtaDataOut(++u8MsgId, "Frequence 200 Hz");
+                sendSendOtaDataOut(++u8MsgId, "Paggr 300 kWh");
+            }
+        }
+     
     }while(menuChoice != 'Q' && menuChoice != 'q');
 
     CloseCOM();

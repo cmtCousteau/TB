@@ -105,9 +105,9 @@ bool sendSetLpmParamsOut(uint8_t u8MsgId, bool wakeHost, uint16_t sleepTime, boo
 void sendSoftResetOut (uint8_t u8MsgId){
     
     SoftResetOut(u8MsgId);
-    char te[200];
-    UartProcessor_ReadTxMessage(te, 200);
-    UartProcessor_ReadTxMessage(te, 200);
+    char msg[200];
+    UartProcessor_ReadTxMessage(msg, 200);
+    UartProcessor_ReadTxMessage(msg, 200);
 }
 
 void sendSetConnectionParamsOut (uint8_t u8MsgId, uint16_t maxConInterval, uint16_t minConInterval, bool saveToNv, uint16_t slaveLatency, uint16_t supervisionTimeout){
@@ -122,27 +122,35 @@ void sendSetConnectionParamsOut (uint8_t u8MsgId, uint16_t maxConInterval, uint1
     
     SetConnectionParamsOut(u8MsgId, &params_SetConnectionParamsOut);
     
-    char te[200];
-    UartProcessor_ReadTxMessage(te, 200);
+    char msg[200];
+    UartProcessor_ReadTxMessage(msg, 200);
 }
 
-void readData(){
-    char te[200];
+uint16_t waitForCommand(){
+    char msg[200];
+    char *command;
     
-    
-    UartProcessor_ReadTxMessage(te, 200);
-    UartProcessor_ReadTxMessage(te, 200);
-    
-    JsonNode *jsonMsg = UartProcessor_ReadTxMessage(te, 200);
-    
+    // Le message est reçu 3 fois, il faut donc effectue 3 lectures.
+    UartProcessor_ReadTxMessage(msg, 200);
+    UartProcessor_ReadTxMessage(msg, 200);
+
+    // Récupération du message au format JSON et récupération de la commande
+    // qu'il contient.
+    JsonNode *jsonMsg = UartProcessor_ReadTxMessage(msg, 200);
     JsonNode *jsonParam = json_find_member (jsonMsg, "params");
     JsonNode *jsonDataAscii = json_find_member (jsonParam, "DataAscii");
-      
-    printf("Data : %s", jsonDataAscii->number_);
+
+    command = (char *)jsonDataAscii->number_;
+
+    free(jsonMsg);
+    free(jsonParam);
+    free(jsonDataAscii);
     
-   // uint8_t u8MsgId = 10;
-   // sendSendOtaDataOut( u8MsgId, "Blu");
-    
+    if(strcmp(command, "GetResources") == 0){
+        free(command);
+        return GET_RESOURCES;
+    }
+    return 0;
 }
 
 

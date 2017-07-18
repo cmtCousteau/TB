@@ -12,23 +12,17 @@ import android.os.RemoteException;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 public class mainMenu extends AppCompatActivity {
 
-
     Messenger mService = null;
-    boolean mBound;
-
 
     private ServiceConnection mConnection = new ServiceConnection() {
+        // Appelé lorsque l'on est connecté au service.
         public void onServiceConnected(ComponentName className, IBinder service) {
-            // This is called when the connection with the service has been
-            // established, giving us the object we can use to
-            // interact with the service.  We are communicating with the
-            // service using a Messenger, so here we get a client-side
-            // representation of that from the raw IBinder object.
+
             mService = new Messenger(service);
-            mBound = true;
 
             Message msg = Message.obtain(null, MessengerService.GET_CONNECTED_BLE_ADDRESS, 0, 0);
             try {
@@ -38,11 +32,9 @@ public class mainMenu extends AppCompatActivity {
             }
         }
 
+        // Appelé lors de la déconnexion du service.
         public void onServiceDisconnected(ComponentName className) {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
             mService = null;
-            mBound = false;
         }
     };
 
@@ -63,7 +55,6 @@ public class mainMenu extends AppCompatActivity {
 
         Button btnDisconnect = (Button) findViewById(R.id.btnDisconnect);
         btnDisconnect.setOnClickListener(btnDisconnectClick);
-
     }
 
     @Override
@@ -103,8 +94,6 @@ public class mainMenu extends AppCompatActivity {
     };
 
 
-
-
     private  View.OnClickListener btnDisconnectClick = new View.OnClickListener(){
 
         @Override
@@ -131,7 +120,4 @@ public class mainMenu extends AppCompatActivity {
             startActivity(IntentStartMenuIntent);
         }
     };
-
-
-
 }

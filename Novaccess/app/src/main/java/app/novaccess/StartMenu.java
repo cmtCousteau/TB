@@ -120,7 +120,7 @@ public class StartMenu extends AppCompatActivity {
                             listSearchFoundDevice.add(item);
                     }
 
-                    // Ajoute affiche les résultats.
+                    // Ajoute et affiche les résultats.
                     CustomListDevice adapter = new CustomListDevice(StartMenu.this,listSearchFoundDevice,listPower, listAddress);
                     listViewDevice.setAdapter(adapter);
                 }
@@ -147,7 +147,6 @@ public class StartMenu extends AppCompatActivity {
         super.onResume();
         cleanDeviceList();
         bindService(new Intent(this, MessengerService.class), mConnection, Context.BIND_AUTO_CREATE);
-
     }
 
     @Override
@@ -164,9 +163,8 @@ public class StartMenu extends AppCompatActivity {
 
     private void addDeviceToList(String deviceName, int rssi, String deviceHardwareAddress){
 
-
         if(!listDeviceFound.contains(deviceName)) {
-            listDeviceFound.add("s/n : " + deviceName);
+            listDeviceFound.add(deviceName);
             listPower.add(100 + rssi);
             listAddress.add(deviceHardwareAddress);
         }

@@ -46,9 +46,11 @@ extern "C" {
 /*********************************************************************
 * INCLUDES
 */
+#include <stdlib.h>
 #include "SaBLExAPITypes.h"
 #include "json.h"
 #include "SaBLExAPI_Shared.h"
+#include "rs232.h"
 
 /*********************************************************************
 * EXTERNAL VARIABLES
