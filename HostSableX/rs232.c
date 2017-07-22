@@ -116,8 +116,7 @@ bool openCOM(int nId){
     // error setting communications mask
    }
    
-
-      return true;
+   return true;
    
     
 }
@@ -241,8 +240,6 @@ JsonNode * UartProcessor_ReadTxMessage(char* receivedMsg, uint16_t bufferLenght)
 }
 
 void UartProcessor_WriteTxMessage(char* jsonMsg){
-    
-
     
     bool test;
     unsigned long int written;
